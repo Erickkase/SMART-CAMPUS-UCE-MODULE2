@@ -9,7 +9,7 @@ export class CreateScholarshipDto {
     example: '2f6f25c5-5df3-45e7-8f6f-3396a3ac4cf5',
   })
   @IsUUID()
-  studentId: string;
+  studentId!: string;
 
   @ApiProperty({
     description: 'Scholarship type requested by the student',
@@ -17,7 +17,7 @@ export class CreateScholarshipDto {
   })
   @IsString()
   @IsNotEmpty()
-  scholarshipType: string;
+  scholarshipType!: string;
 
   @ApiProperty({
     description: 'Reason submitted by the student',
@@ -25,7 +25,7 @@ export class CreateScholarshipDto {
   })
   @IsString()
   @IsNotEmpty()
-  reason: string;
+  reason!: string;
 
   @ApiProperty({
     description: 'Initial workflow status',
@@ -33,5 +33,5 @@ export class CreateScholarshipDto {
     example: ScholarshipStatus.PENDING,
   })
   @IsEnum(ScholarshipStatus)
-  status: ScholarshipStatus;
+  status!: ScholarshipStatus;
 }

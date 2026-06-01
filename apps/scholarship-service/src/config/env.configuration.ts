@@ -2,6 +2,9 @@ export default () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 3000),
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
+  databaseEnabled:
+    (process.env.DB_ENABLED ??
+      (process.env.NODE_ENV === 'production' ? 'true' : 'false')) === 'true',
   database: {
     host: process.env.DB_HOST ?? 'localhost',
     port: Number(process.env.DB_PORT ?? 5432),

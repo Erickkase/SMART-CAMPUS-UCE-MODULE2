@@ -17,18 +17,23 @@ import { ScholarshipModule } from './modules/scholarship/scholarship.module';
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres' as const,
-        host: configService.get<string>('database.host'),
-        port: configService.get<number>('database.port'),
-        username: configService.get<string>('database.username'),
-        password: configService.get<string>('database.password'),
-        database: configService.get<string>('database.name'),
-        synchronize: configService.get<boolean>('database.synchronize'),
-        logging: configService.get<boolean>('database.logging'),
-        autoLoadEntities: true,
-        entities: [ScholarshipTypeOrmEntity],
-      }),
+      useFactory: (configService: ConfigService) => {
+        const dbEnabled = configService.get<boolean>('databaseEnabled') ?? false;
+
+        return {
+          type: 'postgres' as const,
+          host: configService.get<string>('database.host'),
+          port: configService.get<number>('database.port'),
+          username: configService.get<string>('database.username'),
+          password: configService.get<string>('database.password'),
+          database: configService.get<string>('database.name'),
+          synchronize: configService.get<boolean>('database.synchronize'),
+          logging: configService.get<boolean>('database.logging'),
+          autoLoadEntities: true,
+          entities: [ScholarshipTypeOrmEntity],
+          manualInitialization: !dbEnabled,
+        };
+      },
     }),
     ScholarshipModule,
     HealthModule,

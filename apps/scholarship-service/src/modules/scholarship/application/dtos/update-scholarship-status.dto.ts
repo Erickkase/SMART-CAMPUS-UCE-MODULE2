@@ -9,5 +9,5 @@ export class UpdateScholarshipStatusDto {
     example: ScholarshipStatus.APPROVED,
   })
   @IsEnum(ScholarshipStatus)
-  status: ScholarshipStatus;
+  status!: ScholarshipStatus;
 }

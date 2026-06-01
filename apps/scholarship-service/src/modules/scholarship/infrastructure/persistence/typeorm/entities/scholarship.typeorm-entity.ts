@@ -10,27 +10,27 @@ import { ScholarshipStatus } from '../../../../domain/enums/scholarship-status.e
 @Entity({ name: 'scholarships' })
 export class ScholarshipTypeOrmEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'varchar', length: 100 })
-  studentId: string;
+  studentId!: string;
 
   @Column({ type: 'varchar', length: 100 })
-  scholarshipType: string;
+  scholarshipType!: string;
 
   @Column({ type: 'text' })
-  reason: string;
+  reason!: string;
 
   @Column({
     type: 'enum',
     enum: ScholarshipStatus,
     default: ScholarshipStatus.PENDING,
   })
-  status: ScholarshipStatus;
+  status!: ScholarshipStatus;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
