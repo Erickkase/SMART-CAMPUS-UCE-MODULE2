@@ -21,7 +21,7 @@ async function bootstrap(): Promise<void> {
 
   setupSwagger(app);
 
-  const port = Number(process.env.PORT ?? 3002);
+  const port = Number(process.env.PORT ?? 3001);
   await app.listen(port);
 }
 

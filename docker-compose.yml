@@ -54,10 +54,27 @@ services:
     env_file:
       - apps/socioeconomic-form-service/.env.docker
     ports:
-      - "3002:3002"
+      - "3001:3001"
     depends_on:
       mongo:
         condition: service_healthy
+
+  welfare-frontend:
+    build:
+      context: .
+      dockerfile: apps/welfare-frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_SCHOLARSHIP_API_URL: http://localhost:3000
+        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: http://localhost:3001
+    container_name: welfare-frontend
+    restart: unless-stopped
+    env_file:
+      - apps/welfare-frontend/.env.docker
+    ports:
+      - "3002:3002"
+    depends_on:
+      - scholarship-service
+      - socioeconomic-form-service
 
 volumes:
   scholarship_postgres_data:

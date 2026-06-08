@@ -3,6 +3,8 @@ import { ServiceStatusPanel } from '@/components/dashboard/service-status-panel'
 import { SummaryCard } from '@/components/dashboard/summary-card';
 import { getServiceStatuses } from '@/lib/api/service-status';
 
+export const dynamic = 'force-dynamic';
+
 const summaryCards = [
   {
     title: 'Scholarship Requests',
