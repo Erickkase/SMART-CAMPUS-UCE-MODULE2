@@ -1,23 +1,28 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SocioeconomicFormServiceModule } from './socioeconomic-form-service.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
+import { setupSwagger } from './config/swagger.config';
 
-async function bootstrap() {
-  const app = await NestFactory.create(SocioeconomicFormServiceModule);
+async function bootstrap(): Promise<void> {
+  const app = await NestFactory.create(AppModule);
 
-  const config = new DocumentBuilder()
-    .setTitle('Socioeconomic Form Service')
-    .setDescription('Student Welfare Module - UCE Socioeconomic Forms')
-    .setVersion('1.0')
-    .addTag('Socioeconomic Forms')
-    .build();
-    
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
+    credentials: true,
+  });
 
-  const port = process.env.PORT || 3002;
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  setupSwagger(app);
+
+  const port = Number(process.env.PORT ?? 3002);
   await app.listen(port);
-  console.log(`Socioeconomic Form Service running at: http://localhost:${port}`);
-  console.log(`Swagger documentation available at: http://localhost:${port}/api/docs`);
 }
-bootstrap();
+
+void bootstrap();

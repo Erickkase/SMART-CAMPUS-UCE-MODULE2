@@ -31,5 +31,34 @@ services:
       postgres:
         condition: service_healthy
 
+  mongo:
+    image: mongo:7
+    container_name: socioeconomic-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - socioeconomic_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  socioeconomic-form-service:
+    build:
+      context: .
+      dockerfile: apps/socioeconomic-form-service/Dockerfile
+    container_name: socioeconomic-form-service
+    restart: unless-stopped
+    env_file:
+      - apps/socioeconomic-form-service/.env.docker
+    ports:
+      - "3002:3002"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
 volumes:
   scholarship_postgres_data:
+  socioeconomic_mongo_data:

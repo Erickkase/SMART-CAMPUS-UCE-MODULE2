@@ -5,7 +5,10 @@
   "scripts": {
     "start": "nest start scholarship-service",
     "start:dev": "nest start scholarship-service --watch",
+    "start:socioeconomic": "nest start socioeconomic-form-service",
+    "start:socioeconomic:dev": "nest start socioeconomic-form-service --watch",
     "build": "nest build scholarship-service",
+    "build:socioeconomic": "nest build socioeconomic-form-service",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
