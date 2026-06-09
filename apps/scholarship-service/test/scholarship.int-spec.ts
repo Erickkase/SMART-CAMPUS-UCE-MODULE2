@@ -9,8 +9,10 @@ describe('Scholarship API', () => {
   let httpServer: Server;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.DB_ENABLED = 'false';
+    Object.assign(process.env, {
+      NODE_ENV: 'test',
+      DB_ENABLED: 'false',
+    });
 
     const { AppModule } = await import('../src/app.module');
 

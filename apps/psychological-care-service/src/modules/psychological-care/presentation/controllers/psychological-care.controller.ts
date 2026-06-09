@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -34,8 +35,12 @@ import { PsychologicalAppointment } from '../../domain/entities/psychological-ap
 import { PsychologicalFollowUp } from '../../domain/entities/psychological-follow-up.entity';
 import { PsychologicalReferral } from '../../domain/entities/psychological-referral.entity';
 import { PsychologicalRequest } from '../../domain/entities/psychological-request.entity';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { JwtPayload } from '../../../auth/interfaces/jwt-payload.interface';
 
 @ApiTags('Psychological Care')
+@UseGuards(JwtAuthGuard)
 @Controller('psychological-care')
 export class PsychologicalCareController {
   constructor(private readonly psychologicalCareService: PsychologicalCareService) {}
@@ -49,6 +54,7 @@ export class PsychologicalCareController {
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   createRequest(
     @Body() createRequestDto: CreatePsychologicalRequestDto,
+    @CurrentUser() _currentUser?: JwtPayload,
   ): Promise<PsychologicalRequest> {
     return this.psychologicalCareService.createRequest(createRequestDto);
   }

@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import envConfiguration from './config/env.configuration';
 import { validateEnv } from './config/env.validation';
+import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { PsychologicalAppointmentTypeOrmEntity } from './modules/psychological-care/infrastructure/persistence/typeorm/entities/psychological-appointment.typeorm-entity';
 import { PsychologicalFollowUpTypeOrmEntity } from './modules/psychological-care/infrastructure/persistence/typeorm/entities/psychological-follow-up.typeorm-entity';
@@ -43,6 +44,7 @@ import { PsychologicalCareModule } from './modules/psychological-care/psychologi
         };
       },
     }),
+    AuthModule,
     PsychologicalCareModule,
     HealthModule,
   ],

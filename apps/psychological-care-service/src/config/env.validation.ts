@@ -27,6 +27,10 @@ export function validateEnv(config: EnvConfig): EnvConfig {
     }
   }
 
+  if (config.AUTH_ENABLED === 'true' && !config.JWT_SECRET) {
+    throw new Error('Environment variable JWT_SECRET is required when AUTH_ENABLED=true');
+  }
+
   if (config.PORT) {
     const port = Number(config.PORT);
 

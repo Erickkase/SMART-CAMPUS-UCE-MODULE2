@@ -8,6 +8,8 @@ const config: Config = {
     '^.+\\.(t|j)s$': ['ts-jest', { tsconfig: 'tsconfig.spec.json' }],
   },
   testEnvironment: 'node',
+  modulePathIgnorePatterns: ['<rootDir>/apps/welfare-frontend/.next'],
+  testPathIgnorePatterns: ['<rootDir>/apps/welfare-frontend/.next'],
 };
 
 export default config;

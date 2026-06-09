@@ -3,6 +3,12 @@ export default () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 3003),
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
+  authEnabled: (process.env.AUTH_ENABLED ?? 'false') === 'true',
+  jwt: {
+    secret: process.env.JWT_SECRET ?? 'development-secret',
+    issuer: process.env.JWT_ISSUER ?? 'smart-campus-uce',
+    audience: process.env.JWT_AUDIENCE ?? 'psychological-care-service',
+  },
   databaseEnabled:
     (process.env.DB_ENABLED ??
       (process.env.NODE_ENV === 'production' ? 'true' : 'false')) === 'true',

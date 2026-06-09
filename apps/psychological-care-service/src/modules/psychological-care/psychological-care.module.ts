@@ -20,8 +20,8 @@ import { PsychologicalReferralTypeOrmRepository } from './infrastructure/persist
 import { PsychologicalRequestTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/psychological-request-typeorm.repository';
 import { PsychologicalCareController } from './presentation/controllers/psychological-care.controller';
 
-loadEnv({ path: 'apps/psychological-care-service/.env' });
-loadEnv();
+loadEnv({ path: 'apps/psychological-care-service/.env', quiet: true });
+loadEnv({ quiet: true });
 
 const isDbEnabled =
   (process.env.DB_ENABLED ??

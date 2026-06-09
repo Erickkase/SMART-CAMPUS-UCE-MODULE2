@@ -10,6 +10,8 @@ const config: Config = {
   collectCoverageFrom: ['apps/**/*.ts', '!apps/**/*.module.ts', '!apps/**/main.ts'],
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
+  modulePathIgnorePatterns: ['<rootDir>/apps/welfare-frontend/.next'],
+  testPathIgnorePatterns: ['<rootDir>/apps/welfare-frontend/.next'],
 };
 
 export default config;
