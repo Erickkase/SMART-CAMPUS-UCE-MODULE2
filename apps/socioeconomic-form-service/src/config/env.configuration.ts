@@ -1,7 +1,7 @@
 // Maps environment variables into typed socioeconomic-form-service configuration values.
 export default () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
-  port: Number(process.env.PORT ?? 3002),
+  port: Number(process.env.PORT ?? 3001),
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
   mongoEnabled:
     (process.env.MONGO_ENABLED ??

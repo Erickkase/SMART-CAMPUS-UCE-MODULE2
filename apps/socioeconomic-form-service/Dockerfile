@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY nest-cli.json tsconfig*.json ./
-COPY apps ./apps
+COPY apps/socioeconomic-form-service ./apps/socioeconomic-form-service
 
 RUN npx nest build socioeconomic-form-service
 
@@ -21,6 +21,6 @@ RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3002
+EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/apps/socioeconomic-form-service/main.js"]

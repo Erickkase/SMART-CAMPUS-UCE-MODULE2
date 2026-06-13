@@ -8,8 +8,10 @@ describe('Socioeconomic Form API', () => {
   let httpServer: Server;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.MONGO_ENABLED = 'false';
+    Object.assign(process.env, {
+      NODE_ENV: 'test',
+      MONGO_ENABLED: 'false',
+    });
 
     const { AppModule } = await import('../src/app.module');
 

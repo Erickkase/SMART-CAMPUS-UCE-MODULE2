@@ -25,6 +25,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/socioeconomic-form-service/tsconfig.app.json"
       }
+    },
+    "psychological-care-service": {
+      "type": "application",
+      "root": "apps/psychological-care-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/psychological-care-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/psychological-care-service/tsconfig.app.json"
+      }
     }
   }
 }

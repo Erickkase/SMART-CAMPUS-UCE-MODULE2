@@ -54,11 +54,63 @@ services:
     env_file:
       - apps/socioeconomic-form-service/.env.docker
     ports:
-      - "3002:3002"
+      - "3001:3001"
     depends_on:
       mongo:
         condition: service_healthy
 
+  psychological-postgres:
+    image: postgres:16
+    container_name: psychological-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: psychological_care_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - psychological_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d psychological_care_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  psychological-care-service:
+    build:
+      context: .
+      dockerfile: apps/psychological-care-service/Dockerfile
+    container_name: psychological-care-service
+    restart: unless-stopped
+    env_file:
+      - apps/psychological-care-service/.env.docker
+    ports:
+      - "3002:3002"
+    depends_on:
+      psychological-postgres:
+        condition: service_healthy
+
+  welfare-frontend:
+    build:
+      context: .
+      dockerfile: apps/welfare-frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_SCHOLARSHIP_API_URL: http://localhost:3000
+        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: http://localhost:3001
+        NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: http://localhost:3002
+    container_name: welfare-frontend
+    restart: unless-stopped
+    env_file:
+      - apps/welfare-frontend/.env.docker
+    ports:
+      - "3003:3002"
+    depends_on:
+      - scholarship-service
+      - socioeconomic-form-service
+      - psychological-care-service
+
 volumes:
   scholarship_postgres_data:
   socioeconomic_mongo_data:
+  psychological_postgres_data:
