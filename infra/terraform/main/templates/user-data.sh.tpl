@@ -9,8 +9,9 @@ exec > >(tee /var/log/user-data.log) 2>&1
 
 echo "[user-data] Iniciando configuracion de la instancia..."
 
-# Detectar IP publica (Elastic IP o IP publica asignada)
-PUBLIC_IP=$(curl -s -m 5 http://169.254.169.254/latest/meta-data/public-ipv4 || echo "")
+# Detectar IP publica (Elastic IP o IP publica asignada) usando IMDSv2
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" -s -m 5 || echo "")
+PUBLIC_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s -m 5 http://169.254.169.254/latest/meta-data/public-ipv4 || echo "")
 if [ -z "$PUBLIC_IP" ]; then
   echo "[user-data] ERROR: No se pudo obtener la IP publica de la instancia"
   exit 1
@@ -20,7 +21,24 @@ echo "[user-data] IP publica detectada: $PUBLIC_IP"
 # Instalar Docker y Docker Compose (Amazon Linux 2023)
 echo "[user-data] Instalando Docker..."
 dnf update -y
-dnf install -y docker docker-compose-plugin git
+dnf install -y docker git
+
+# docker-compose-plugin no siempre esta en los repositorios de AL2023,
+# por lo que se instala manualmente desde GitHub.
+echo "[user-data] Instalando Docker Compose plugin..."
+mkdir -p /usr/local/lib/docker/cli-plugins
+COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+curl -SL "https://github.com/docker/compose/releases/download/$COMPOSE_VERSION/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# Instalar Docker Buildx (requerido por docker compose build en esta version)
+echo "[user-data] Instalando Docker Buildx..."
+mkdir -p /usr/local/lib/docker/cli-plugins
+BUILDX_VERSION=$(curl -s https://api.github.com/repos/docker/buildx/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+curl -SL "https://github.com/docker/buildx/releases/download/$BUILDX_VERSION/buildx-$BUILDX_VERSION.linux-amd64" -o /usr/local/lib/docker/cli-plugins/docker-buildx
+chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+docker buildx version
+docker compose version
 
 systemctl enable docker
 systemctl start docker
