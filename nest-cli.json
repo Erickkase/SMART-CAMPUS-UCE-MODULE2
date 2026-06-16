@@ -43,6 +43,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
       }
+    },
+    "subject-service": {
+      "type": "application",
+      "root": "apps/subject-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/subject-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/subject-service/tsconfig.app.json"
+      }
     }
   }
 }
