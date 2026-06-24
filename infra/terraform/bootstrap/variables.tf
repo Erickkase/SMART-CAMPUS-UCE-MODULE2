@@ -13,7 +13,7 @@ variable "project_name" {
 variable "state_bucket_name" {
   description = "Nombre único global del bucket S3 para guardar el estado de Terraform"
   type        = string
-  default     = "smart-campus-uce-terraform-state"
+  default     = "smart-campus-uce-module2-tfstate-832682702884"
 }
 
 variable "dynamodb_lock_table" {
