@@ -1,0 +1,65 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [qa, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente a desplegar (qa o main)'
+        required: true
+        default: 'qa'
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  TF_STATE_BUCKET: smart-campus-uce-module2-tfstate-832682702884
+  TF_LOCK_TABLE: smart-campus-uce-terraform-lock
+  TF_VERSION: "1.9.8"
+
+jobs:
+  deploy:
+    name: Terraform Deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/main
+    env:
+      TF_ENVIRONMENT: ${{ github.event.inputs.environment || github.ref_name }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION || env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=${TF_ENVIRONMENT}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION || env.AWS_REGION }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="dynamodb_table=${{ env.TF_LOCK_TABLE }}"
+
+      - name: Select Terraform workspace
+        run: terraform workspace select -or-create "$TF_ENVIRONMENT"
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="environments/${TF_ENVIRONMENT}.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -var-file="environments/${TF_ENVIRONMENT}.tfvars" -auto-approve

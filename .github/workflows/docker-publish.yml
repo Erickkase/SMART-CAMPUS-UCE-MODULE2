@@ -1,0 +1,64 @@
+name: Docker Publish
+
+on:
+  push:
+    branches: [qa, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/erickkase/smart-campus-uce-module2
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: scholarship-service
+            dockerfile: apps/scholarship-service/Dockerfile
+          - service: socioeconomic-form-service
+            dockerfile: apps/socioeconomic-form-service/Dockerfile
+          - service: psychological-care-service
+            dockerfile: apps/psychological-care-service/Dockerfile
+          - service: welfare-frontend
+            dockerfile: apps/welfare-frontend/Dockerfile
+            build_args: |
+              NEXT_PUBLIC_SCHOLARSHIP_API_URL=http://localhost:3000
+              NEXT_PUBLIC_SOCIOECONOMIC_API_URL=http://localhost:3001
+              NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=http://localhost:3002
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ matrix.build_args }}

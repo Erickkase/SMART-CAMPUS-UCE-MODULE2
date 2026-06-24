@@ -16,8 +16,8 @@ variable "environment" {
   default     = "qa"
 
   validation {
-    condition     = contains(["dev", "qa", "prod"], var.environment)
-    error_message = "El ambiente debe ser dev, qa o prod."
+    condition     = contains(["dev", "qa", "main"], var.environment)
+    error_message = "El ambiente debe ser dev, qa o main."
   }
 }
 
