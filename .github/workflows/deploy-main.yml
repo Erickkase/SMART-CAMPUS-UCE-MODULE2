@@ -1,0 +1,64 @@
+name: Deploy to AWS Main (Production)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/terraform/**'
+      - '.github/workflows/deploy-main.yml'
+      - 'docker-compose.yml'
+      - 'apps/**/Dockerfile'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Terraform Deploy (main environment)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=smart-campus-uce-terraform-state" \
+            -backend-config="key=main/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_REGION }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="dynamodb_table=smart-campus-uce-terraform-lock"
+
+      - name: Terraform Workspace Select
+        run: terraform workspace select main || terraform workspace new main
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="environments/main.tfvars" -out="tfplan-main"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve "tfplan-main"
+
+      - name: Terraform Outputs
+        if: success()
+        run: terraform output
