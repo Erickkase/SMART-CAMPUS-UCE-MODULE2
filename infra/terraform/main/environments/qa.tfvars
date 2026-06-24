@@ -12,7 +12,7 @@ instance_type = "t3.small"
 # IMPORTANTE: reemplazar por el nombre de tu Key Pair de AWS Academy
 # si quieres acceder por SSH. Si no tienes uno, dejar vacio y todo el
 # acceso sera via user-data / recreacion de la instancia.
-key_pair_name = "smart-campus-uce-qa-key"
+key_pair_name = ""
 
 # En AWS Academy los CIDRs de acceso suelen estar restringidos.
 # Para un entorno QA se permite acceso desde cualquier lugar.
