@@ -14,5 +14,6 @@ coverage/
 
 terraform.tfstate
 terraform.tfstate.backup
+.terraform/
 
 .pem
