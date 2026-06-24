@@ -38,7 +38,7 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="bucket=smart-campus-uce-terraform-state" \
+            -backend-config="bucket=smart-campus-uce-module2-tfstate-832682702884" \
             -backend-config="key=main/terraform.tfstate" \
             -backend-config="region=${{ secrets.AWS_REGION }}" \
             -backend-config="encrypt=true" \
