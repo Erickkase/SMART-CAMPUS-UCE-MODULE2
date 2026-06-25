@@ -106,6 +106,16 @@ DB_SYNCHRONIZE=true
 DB_LOGGING=false
 EOF
 
+cat > apps/api-gateway/.env.docker <<EOF
+PORT=8080
+CORS_ORIGIN=*
+SCHOLARSHIP_SERVICE_URL=http://scholarship-service:3000
+SOCIOECONOMIC_SERVICE_URL=http://socioeconomic-form-service:3001
+PSYCHOLOGICAL_SERVICE_URL=http://psychological-care-service:3002
+AUTH_ENABLED=false
+JWT_SECRET=change-me-in-production
+EOF
+
 cat > apps/welfare-frontend/.env.docker <<EOF
 NEXT_PUBLIC_SCHOLARSHIP_API_URL=http://$PUBLIC_IP:3000
 NEXT_PUBLIC_SOCIOECONOMIC_API_URL=http://$PUBLIC_IP:3001

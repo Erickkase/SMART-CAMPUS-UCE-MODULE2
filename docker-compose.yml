@@ -91,6 +91,21 @@ services:
       psychological-postgres:
         condition: service_healthy
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    env_file:
+      - apps/api-gateway/.env.docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - scholarship-service
+      - socioeconomic-form-service
+      - psychological-care-service
+
   welfare-frontend:
     build:
       context: .
@@ -106,6 +121,7 @@ services:
     ports:
       - "3003:3002"
     depends_on:
+      - api-gateway
       - scholarship-service
       - socioeconomic-form-service
       - psychological-care-service
