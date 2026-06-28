@@ -6,11 +6,13 @@ import {
   SCHOLARSHIP_REPOSITORY,
   ScholarshipRepository,
 } from '../../domain/repositories/scholarship.repository';
+import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
 import { ScholarshipService } from './scholarship.service';
 
 describe('ScholarshipService', () => {
   let service: ScholarshipService;
   let repository: jest.Mocked<ScholarshipRepository>;
+  let mqttPublisher: jest.Mocked<ScholarshipMqttPublisherService>;
 
   const scholarship = new Scholarship(
     '67e95da2-65f7-4de7-8dc0-622b7298236b',
@@ -32,12 +34,22 @@ describe('ScholarshipService', () => {
       delete: jest.fn(),
     };
 
+    mqttPublisher = {
+      publishScholarshipCreated: jest.fn(),
+      publishScholarshipStatusUpdated: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipMqttPublisherService>;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ScholarshipService,
         {
           provide: SCHOLARSHIP_REPOSITORY,
           useValue: repository,
+        },
+        {
+          provide: ScholarshipMqttPublisherService,
+          useValue: mqttPublisher,
         },
       ],
     }).compile();
@@ -59,6 +71,7 @@ describe('ScholarshipService', () => {
 
     expect(result.status).toBe(ScholarshipStatus.PENDING);
     expect(repository.create).toHaveBeenCalledTimes(1);
+    expect(mqttPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
   });
 
   it('should return all scholarships', async () => {
@@ -98,6 +111,9 @@ describe('ScholarshipService', () => {
     expect(repository.updateStatus).toHaveBeenCalledWith(
       scholarship.id,
       ScholarshipStatus.APPROVED,
+    );
+    expect(mqttPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
+      approvedScholarship,
     );
   });
 

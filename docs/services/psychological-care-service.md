@@ -84,6 +84,15 @@ Source files:
 - Docker Compose uses PostgreSQL with `DB_ENABLED=true`.
 - The Compose database service name is `psychological-postgres`.
 
+## MQTT Events
+
+This service subscribes to the following MQTT topics:
+
+| Topic | Source |
+| --- | --- |
+| `scholarship.created` | `scholarship-service` |
+| `scholarship.status.updated` | `scholarship-service` |
+
 ## Local Execution
 
 From the monorepo root:

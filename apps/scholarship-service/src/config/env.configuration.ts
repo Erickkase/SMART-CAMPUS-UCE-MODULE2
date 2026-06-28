@@ -21,4 +21,9 @@ export default () => ({
     synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
     logging: (process.env.DB_LOGGING ?? 'false') === 'true',
   },
+  mqtt: {
+    enabled: (process.env.MQTT_ENABLED ?? 'false') === 'true',
+    brokerUrl: process.env.MQTT_BROKER_URL ?? 'mqtt://localhost:1883',
+    clientId: process.env.MQTT_CLIENT_ID ?? 'scholarship-service',
+  },
 });

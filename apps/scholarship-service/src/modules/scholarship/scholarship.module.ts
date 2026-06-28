@@ -4,6 +4,7 @@ import { SCHOLARSHIP_REPOSITORY } from './domain/repositories/scholarship.reposi
 import { ScholarshipService } from './application/services/scholarship.service';
 import { ScholarshipTypeOrmEntity } from './infrastructure/persistence/typeorm/entities/scholarship.typeorm-entity';
 import { ScholarshipInMemoryRepository } from './infrastructure/persistence/in-memory/repositories/scholarship-in-memory.repository';
+import { ScholarshipMqttPublisherService } from './infrastructure/messaging/scholarship-mqtt-publisher.service';
 import { ScholarshipTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/scholarship-typeorm.repository';
 import { ScholarshipController } from './presentation/controllers/scholarship.controller';
 
@@ -25,7 +26,11 @@ const scholarshipRepositoryProvider = {
 @Module({
   imports: persistenceImports,
   controllers: [ScholarshipController],
-  providers: [ScholarshipService, scholarshipRepositoryProvider],
+  providers: [
+    ScholarshipService,
+    ScholarshipMqttPublisherService,
+    scholarshipRepositoryProvider,
+  ],
   exports: [ScholarshipService],
 })
 export class ScholarshipModule {}

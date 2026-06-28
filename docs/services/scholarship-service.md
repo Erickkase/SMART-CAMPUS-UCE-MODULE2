@@ -78,6 +78,15 @@ Source files:
 - Docker Compose uses PostgreSQL with `DB_ENABLED=true`.
 - The Compose database service name is `postgres`.
 
+## MQTT Events
+
+This service publishes the following MQTT topics:
+
+| Topic | Trigger |
+| --- | --- |
+| `scholarship.created` | A scholarship request is created |
+| `scholarship.status.updated` | A scholarship request status changes |
+
 ## Local Execution
 
 From the monorepo root:

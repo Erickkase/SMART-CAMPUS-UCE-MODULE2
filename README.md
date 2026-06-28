@@ -196,6 +196,13 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 
 The root `docker-compose.yml` orchestrates the full local stack.
 
+### MQTT event topics
+
+| Topic | Publisher | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `scholarship.created` | `scholarship-service` | `psychological-care-service` | Signals that a scholarship request was created |
+| `scholarship.status.updated` | `scholarship-service` | `psychological-care-service` | Signals that a scholarship request changed status |
+
 ### Included infrastructure
 
 | Service | Purpose |

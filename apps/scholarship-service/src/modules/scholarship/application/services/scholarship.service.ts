@@ -15,12 +15,14 @@ import {
   UpdateScholarshipData,
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
+import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
 
 @Injectable()
 export class ScholarshipService {
   constructor(
     @Inject(SCHOLARSHIP_REPOSITORY)
     private readonly scholarshipRepository: ScholarshipRepository,
+    private readonly scholarshipMqttPublisher: ScholarshipMqttPublisherService,
   ) {}
 
   async createScholarship(
@@ -38,7 +40,9 @@ export class ScholarshipService {
       now,
     );
 
-    return this.scholarshipRepository.create(scholarship);
+    const createdScholarship = await this.scholarshipRepository.create(scholarship);
+    await this.scholarshipMqttPublisher.publishScholarshipCreated(createdScholarship);
+    return createdScholarship;
   }
 
   async getScholarships(): Promise<Scholarship[]> {
@@ -114,6 +118,10 @@ export class ScholarshipService {
     if (!updatedScholarship) {
       throw new NotFoundException(`Scholarship with id ${id} was not found`);
     }
+
+    await this.scholarshipMqttPublisher.publishScholarshipStatusUpdated(
+      updatedScholarship,
+    );
 
     return updatedScholarship;
   }
