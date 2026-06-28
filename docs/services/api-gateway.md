@@ -52,6 +52,12 @@ Source files:
 | `STUDENT_SERVICE_URL` | Student service base URL |
 | `AUTH_ENABLED` | Enables gateway JWT guard behavior |
 | `JWT_SECRET` | JWT secret |
+| `MQTT_ENABLED` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | MQTT client identifier |
+| `REDIS_ENABLED` | Enables Redis integration hooks |
+| `REDIS_HOST` | Redis host |
+| `REDIS_PORT` | Redis port |
 
 ## Local Execution
 

@@ -69,6 +69,12 @@ Source files:
 | `DB_USERNAME` | PostgreSQL username |
 | `DB_PASSWORD` | PostgreSQL password |
 | `DB_NAME` | PostgreSQL database |
+| `MQTT_ENABLED` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | MQTT client identifier |
+| `REDIS_ENABLED` | Enables Redis integration hooks |
+| `REDIS_HOST` | Redis host |
+| `REDIS_PORT` | Redis port |
 | `DB_SYNCHRONIZE` | TypeORM schema synchronization |
 | `DB_LOGGING` | TypeORM query logging |
 

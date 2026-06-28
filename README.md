@@ -70,6 +70,8 @@ smart-campus-uce-module2/
 | `psychological-care-service` | `http://localhost:3003` | Swagger: `/api/docs` in local standalone mode |
 | `api-gateway` | `http://localhost:8080` | Gateway root for proxied backend routes |
 | `welfare-frontend` | `http://localhost:3003` | Next.js dev server |
+| `mqtt-broker` | `localhost:1883` | MQTT broker for async event integration |
+| `redis` | `localhost:6379` | Cache and shared transient data |
 
 ### Docker Compose Ports
 
@@ -89,6 +91,8 @@ smart-campus-uce-module2/
 | `student-service` | `3006` | `3006` |
 | `api-gateway` | `8080` | `8080` |
 | `welfare-frontend` | `3003` | `3002` |
+| `mqtt-broker` | `1883` | `1883` |
+| `redis` | `6379` | `6379` |
 
 Important note: `welfare-frontend` and `psychological-care-service` both use `3003` in standalone local execution, but not at the same time. In Docker Compose, the frontend is exposed on `3003` and the psychological service on `3002`.
 
@@ -113,6 +117,12 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `DB_USERNAME` | `postgres` | PostgreSQL user |
 | `DB_PASSWORD` | `postgres` | PostgreSQL password |
 | `DB_NAME` | `scholarship_db` | Database name |
+| `MQTT_ENABLED` | `false` or `true` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | `mqtt://localhost:1883` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | `scholarship-service` | MQTT client identifier |
+| `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
+| `REDIS_HOST` | `localhost` or `redis` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
 | `DB_SYNCHRONIZE` | `true` | TypeORM synchronize flag |
 | `DB_LOGGING` | `false` | TypeORM query logging |
 
@@ -143,6 +153,12 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `DB_USERNAME` | `postgres` | PostgreSQL user |
 | `DB_PASSWORD` | `postgres` | PostgreSQL password |
 | `DB_NAME` | `psychological_care_db` | Database name |
+| `MQTT_ENABLED` | `false` or `true` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | `mqtt://localhost:1883` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | `psychological-care-service` | MQTT client identifier |
+| `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
+| `REDIS_HOST` | `localhost` or `redis` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
 | `DB_SYNCHRONIZE` | `false` or `true` | TypeORM synchronize flag |
 | `DB_LOGGING` | `false` | TypeORM query logging |
 
@@ -160,6 +176,12 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `STUDENT_SERVICE_URL` | `http://localhost:3006` | Student service base URL |
 | `AUTH_ENABLED` | `false` | Enables gateway JWT guard |
 | `JWT_SECRET` | `development-secret` | JWT signing secret |
+| `MQTT_ENABLED` | `false` or `true` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | `mqtt://localhost:1883` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | `api-gateway` | MQTT client identifier |
+| `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
+| `REDIS_HOST` | `localhost` or `redis` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
 
 ### `welfare-frontend`
 
@@ -184,6 +206,8 @@ The root `docker-compose.yml` orchestrates the full local stack.
 | `subject-postgres` | Database for `subject-service` |
 | `enrollment-postgres` | Database for `enrollment-service` |
 | `student-postgres` | Database for `student-service` |
+| `mqtt-broker` | MQTT broker for event-driven communication |
+| `redis` | In-memory cache and shared transient storage |
 
 ### Included applications
 

@@ -1,4 +1,30 @@
 services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    container_name: mqtt-broker
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./infra/docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+
+  redis:
+    image: redis:7-alpine
+    container_name: smart-campus-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   postgres:
     image: postgres:16
     container_name: scholarship-postgres
@@ -228,6 +254,9 @@ services:
       - student-service
 
 volumes:
+  mosquitto_data:
+  mosquitto_log:
+  redis_data:
   scholarship_postgres_data:
   socioeconomic_mongo_data:
   psychological_postgres_data:
