@@ -1,0 +1,57 @@
+name: Deploy to AWS QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws_access_key_id:
+        description: AWS Access Key ID
+        required: true
+      aws_secret_access_key:
+        description: AWS Secret Access Key
+        required: true
+      aws_session_token:
+        description: AWS Session Token (AWS Academy)
+        required: true
+      aws_region:
+        description: AWS Region
+        required: true
+        default: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform/main
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ github.event.inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ github.event.inputs.aws_secret_access_key }}
+          aws-session-token: ${{ github.event.inputs.aws_session_token }}
+          aws-region: ${{ github.event.inputs.aws_region }}
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=smart-campus-uce-terraform-state" \
+            -backend-config="key=qa/terraform.tfstate" \
+            -backend-config="region=${{ github.event.inputs.aws_region }}" \
+            -backend-config="encrypt=true" \
+            -backend-config="dynamodb_table=smart-campus-uce-terraform-lock"
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="environments/qa.tfvars"
+
+      - name: Terraform Apply
+        run: terraform apply -var-file="environments/qa.tfvars" -auto-approve
