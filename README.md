@@ -182,6 +182,11 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
 | `REDIS_HOST` | `localhost` or `redis` | Redis host |
 | `REDIS_PORT` | `6379` | Redis port |
+| `RATE_LIMIT_TTL` | `60000` | Rate limiting window in milliseconds |
+| `RATE_LIMIT_LIMIT` | `30` | Maximum requests per window |
+| `CIRCUIT_BREAKER_TIMEOUT_MS` | `5000` | Upstream timeout before failure |
+| `CIRCUIT_BREAKER_FAILURE_THRESHOLD` | `3` | Failures before opening circuit |
+| `CIRCUIT_BREAKER_RESET_TIMEOUT_MS` | `15000` | Time before retrying an open circuit |
 
 ### `welfare-frontend`
 
@@ -228,6 +233,15 @@ The root `docker-compose.yml` orchestrates the full local stack.
 | `student-service` | Academic student API |
 | `api-gateway` | Unified backend entry point |
 | `welfare-frontend` | Web application |
+
+### Gateway protection
+
+The `api-gateway` includes two runtime protection mechanisms:
+
+| Mechanism | Purpose |
+| --- | --- |
+| Rate limiting | Limits repeated requests inside a fixed time window |
+| Circuit breaker | Stops forwarding calls temporarily after repeated downstream failures |
 
 ### Start the full stack
 

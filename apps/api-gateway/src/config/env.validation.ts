@@ -1,11 +1,24 @@
 type EnvConfig = Record<string, string | undefined>;
 
 export function validateEnv(config: EnvConfig): EnvConfig {
-  if (config.PORT) {
-    const port = Number(config.PORT);
+  const numericVariables = [
+    'PORT',
+    'RATE_LIMIT_TTL',
+    'RATE_LIMIT_LIMIT',
+    'CIRCUIT_BREAKER_TIMEOUT_MS',
+    'CIRCUIT_BREAKER_FAILURE_THRESHOLD',
+    'CIRCUIT_BREAKER_RESET_TIMEOUT_MS',
+  ];
 
-    if (Number.isNaN(port) || port <= 0) {
-      throw new Error('Environment variable PORT must be a valid number');
+  for (const variable of numericVariables) {
+    if (!config[variable]) {
+      continue;
+    }
+
+    const value = Number(config[variable]);
+
+    if (Number.isNaN(value) || value <= 0) {
+      throw new Error(`Environment variable ${variable} must be a valid number`);
     }
   }
 
