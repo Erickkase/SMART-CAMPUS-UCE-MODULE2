@@ -187,6 +187,38 @@ services:
       student-postgres:
         condition: service_healthy
 
+  notification-postgres:
+    image: postgres:16
+    container_name: notification-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - notification_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notification_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: apps/notification-service/Dockerfile
+    container_name: notification-service
+    restart: unless-stopped
+    env_file:
+      - apps/notification-service/.env.docker
+    ports:
+      - "3007:3007"
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: .
@@ -234,3 +266,4 @@ volumes:
   subject_postgres_data:
   enrollment_postgres_data:
   student_postgres_data:
+  notification_postgres_data:
