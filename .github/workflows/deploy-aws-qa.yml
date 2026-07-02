@@ -1,8 +1,16 @@
-name: Deploy to AWS QA
+name: Deploy to AWS
 
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: Environment to deploy (qa or main)
+        required: true
+        default: qa
+        type: choice
+        options:
+          - qa
+          - main
       aws_access_key_id:
         description: AWS Access Key ID
         required: true
@@ -15,7 +23,7 @@ on:
       aws_region:
         description: AWS Region
         required: true
-        default: us-east-1
+        default: us-west-2
 
 jobs:
   deploy:
@@ -44,14 +52,14 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="bucket=smart-campus-uce-terraform-state" \
-            -backend-config="key=qa/terraform.tfstate" \
+            -backend-config="bucket=smart-campus-uce-terraform-state-us-west-2" \
+            -backend-config="key=${{ github.event.inputs.environment }}/terraform.tfstate" \
             -backend-config="region=${{ github.event.inputs.aws_region }}" \
             -backend-config="encrypt=true" \
             -backend-config="dynamodb_table=smart-campus-uce-terraform-lock"
 
       - name: Terraform Plan
-        run: terraform plan -var-file="environments/qa.tfvars"
+        run: terraform plan -var-file="environments/${{ github.event.inputs.environment }}.tfvars"
 
       - name: Terraform Apply
-        run: terraform apply -var-file="environments/qa.tfvars" -auto-approve
+        run: terraform apply -var-file="environments/${{ github.event.inputs.environment }}.tfvars" -auto-approve

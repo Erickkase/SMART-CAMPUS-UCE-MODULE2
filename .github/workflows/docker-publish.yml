@@ -26,6 +26,8 @@ jobs:
             dockerfile: apps/socioeconomic-form-service/Dockerfile
           - service: psychological-care-service
             dockerfile: apps/psychological-care-service/Dockerfile
+          - service: notification-service
+            dockerfile: apps/notification-service/Dockerfile
           - service: welfare-frontend
             dockerfile: apps/welfare-frontend/Dockerfile
             build_args: |

@@ -7,6 +7,7 @@ const navigationItems = [
   { label: 'Scholarships', href: '/scholarships' },
   { label: 'Socioeconomic Forms', href: '/socioeconomic-forms' },
   { label: 'Psychological Care', href: '/psychological-care' },
+  { label: 'Academic Management', href: '/academic-management' },
 ];
 
 export function Navigation() {

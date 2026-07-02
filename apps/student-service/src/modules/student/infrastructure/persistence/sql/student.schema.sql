@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS students (
+  id UUID PRIMARY KEY,
+  identification VARCHAR(30) NOT NULL UNIQUE,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  academic_program VARCHAR(150) NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

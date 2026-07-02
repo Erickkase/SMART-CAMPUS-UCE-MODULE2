@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION: us-east-1
-  TF_STATE_BUCKET: smart-campus-uce-module2-tfstate-832682702884
+  AWS_REGION: us-west-2
+  TF_STATE_BUCKET: smart-campus-uce-terraform-state-us-west-2
   TF_LOCK_TABLE: smart-campus-uce-terraform-lock
   TF_VERSION: "1.9.8"
 

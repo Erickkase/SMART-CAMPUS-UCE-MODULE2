@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import envConfiguration from './config/env.configuration';
 import { validateEnv } from './config/env.validation';
+import { EnrollmentTypeOrmEntity } from './modules/enrollment/infrastructure/persistence/typeorm/entities/enrollment.typeorm-entity';
+import { EnrollmentModule } from './modules/enrollment/enrollment.module';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -28,10 +30,12 @@ import { HealthModule } from './modules/health/health.module';
           synchronize: configService.get<boolean>('database.synchronize'),
           logging: configService.get<boolean>('database.logging'),
           autoLoadEntities: true,
+          entities: [EnrollmentTypeOrmEntity],
           manualInitialization: !dbEnabled,
         };
       },
     }),
+    EnrollmentModule,
     HealthModule,
   ],
 })
