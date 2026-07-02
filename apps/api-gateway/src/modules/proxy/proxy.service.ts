@@ -62,6 +62,21 @@ export class ProxyService {
         serviceUrl: this.configService.get<string>('services.psychological') ?? '',
         upstreamPrefix: '/psychological-care',
       },
+      {
+        externalPrefix: '/api/subjects',
+        serviceUrl: this.configService.get<string>('services.subject') ?? '',
+        upstreamPrefix: '/subjects',
+      },
+      {
+        externalPrefix: '/api/enrollments',
+        serviceUrl: this.configService.get<string>('services.enrollment') ?? '',
+        upstreamPrefix: '/enrollments',
+      },
+      {
+        externalPrefix: '/api/students',
+        serviceUrl: this.configService.get<string>('services.student') ?? '',
+        upstreamPrefix: '/students',
+      },
     ];
 
     return targets.find((target) => originalUrl.startsWith(target.externalPrefix)) ?? null;

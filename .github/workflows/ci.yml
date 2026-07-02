@@ -32,6 +32,9 @@ jobs:
       - name: Build psychological-care-service
         run: npm run build:psychological
 
+      - name: Build notification-service
+        run: npm run build:notification
+
       - name: Run tests
         run: npm run test -- --passWithNoTests
 

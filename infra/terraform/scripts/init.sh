@@ -8,7 +8,7 @@ set -euo pipefail
 
 ENVIRONMENT="${1:-qa}"
 AWS_REGION="${2:-us-east-1}"
-BUCKET_NAME="${3:-smart-campus-uce-module2-tfstate-832682702884}"
+BUCKET_NAME="${3:-smart-campus-uce-terraform-state-us-west-2}"
 DYNAMODB_TABLE="${4:-smart-campus-uce-terraform-lock}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

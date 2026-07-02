@@ -20,3 +20,7 @@ export const socioeconomicApi = createHttpClient(
 export const psychologicalApi = createHttpClient(
   process.env.NEXT_PUBLIC_PSYCHOLOGICAL_API_URL ?? 'http://localhost:3002',
 );
+
+export const gatewayApi = createHttpClient(
+  process.env.NEXT_PUBLIC_API_GATEWAY_URL ?? 'http://localhost:8080',
+);

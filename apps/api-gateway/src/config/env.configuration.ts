@@ -11,5 +11,8 @@ export default () => ({
       process.env.SOCIOECONOMIC_SERVICE_URL ?? 'http://localhost:3001',
     psychological:
       process.env.PSYCHOLOGICAL_SERVICE_URL ?? 'http://localhost:3002',
+    subject: process.env.SUBJECT_SERVICE_URL ?? 'http://localhost:3004',
+    enrollment: process.env.ENROLLMENT_SERVICE_URL ?? 'http://localhost:3005',
+    student: process.env.STUDENT_SERVICE_URL ?? 'http://localhost:3006',
   },
 });

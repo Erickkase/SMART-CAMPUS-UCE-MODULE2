@@ -15,7 +15,7 @@ on:
       aws_region:
         description: AWS Region
         required: true
-        default: us-east-1
+        default: us-west-2
 
 jobs:
   deploy:
@@ -44,7 +44,7 @@ jobs:
       - name: Terraform Init
         run: |
           terraform init \
-            -backend-config="bucket=smart-campus-uce-terraform-state" \
+            -backend-config="bucket=smart-campus-uce-terraform-state-us-west-2" \
             -backend-config="key=qa/terraform.tfstate" \
             -backend-config="region=${{ github.event.inputs.aws_region }}" \
             -backend-config="encrypt=true" \
