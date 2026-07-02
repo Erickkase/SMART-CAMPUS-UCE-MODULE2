@@ -17,7 +17,7 @@ allowed_cidr_blocks = ["0.0.0.0/0"]
 
 # Ports exposed by microservices and the API gateway.
 allowed_service_ports = [3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 8080]
-root_volume_size      = 20
+root_volume_size      = 30
 
 # S3 buckets (must be globally unique)
 app_bucket_name = "smart-campus-uce-app-main-west2-832682702884"
