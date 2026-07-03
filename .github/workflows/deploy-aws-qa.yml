@@ -67,6 +67,10 @@ jobs:
             -backend-config="encrypt=true" \
             -backend-config="dynamodb_table=smart-campus-uce-terraform-lock"
 
+      - name: Select Terraform workspace
+        run: |
+          terraform workspace select ${{ github.event.inputs.environment }} || terraform workspace new ${{ github.event.inputs.environment }}
+
       - name: Terraform Plan
         run: terraform plan -var-file="environments/${{ github.event.inputs.environment }}.tfvars"
 
