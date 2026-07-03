@@ -48,9 +48,10 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_
   exit 1
 fi
 
-echo "Triggering GitHub Actions workflow for environment: $ENVIRONMENT"
+echo "Triggering GitHub Actions workflow for environment: $ENVIRONMENT (ref: $ENVIRONMENT)"
 gh workflow run deploy-aws-qa.yml \
   --repo "$REPO" \
+  --ref "$ENVIRONMENT" \
   -f environment="$ENVIRONMENT" \
   -f aws_access_key_id="$AWS_ACCESS_KEY_ID" \
   -f aws_secret_access_key="$AWS_SECRET_ACCESS_KEY" \
