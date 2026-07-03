@@ -242,10 +242,10 @@ services:
       context: .
       dockerfile: apps/welfare-frontend/Dockerfile
       args:
-        NEXT_PUBLIC_SCHOLARSHIP_API_URL: http://localhost:3000
-        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: http://localhost:3001
-        NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: http://localhost:3002
-        NEXT_PUBLIC_API_GATEWAY_URL: http://localhost:8080
+        NEXT_PUBLIC_SCHOLARSHIP_API_URL: /api/scholarships
+        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: /api/socioeconomic
+        NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: /api/psychological
+        NEXT_PUBLIC_API_GATEWAY_URL: /api/gateway
     container_name: welfare-frontend
     restart: unless-stopped
     env_file:

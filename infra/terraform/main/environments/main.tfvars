@@ -15,8 +15,8 @@ key_pair_name = "one-jule-2026"
 # Open access for QA environment.
 allowed_cidr_blocks = ["0.0.0.0/0"]
 
-# Ports exposed by microservices and the API gateway.
-allowed_service_ports = [3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 8080]
+# Ports exposed by Nginx, microservices and the API gateway.
+allowed_service_ports = [80, 3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 8080]
 root_volume_size      = 30
 
 # S3 buckets (must be globally unique)
