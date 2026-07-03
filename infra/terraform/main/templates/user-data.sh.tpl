@@ -16,7 +16,7 @@ echo "[user-data] NLB IP (Elastic IP): $NLB_IP"
 # Instalar utilidades necesarias
 echo "[user-data] Instalando dependencias..."
 dnf update -y
-dnf install -y docker git amazon-efs-utils nfs-utils
+dnf install -y docker git amazon-efs-utils nfs-utils nginx
 
 # Instalar Docker Compose plugin
 echo "[user-data] Instalando Docker Compose plugin..."
@@ -44,6 +44,22 @@ mkdir -p /data
 mount -t efs -o tls "$EFS_DNS:/" /data || mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 "$EFS_DNS:/" /data
 mkdir -p /data/postgres /data/mongo /data/psychological-postgres /data/subject-postgres /data/enrollment-postgres /data/student-postgres /data/notification-postgres
 echo "$EFS_DNS:/ /data efs _netdev,tls 0 0" >> /etc/fstab
+
+# Configurar Nginx como reverse proxy
+echo "[user-data] Configurando Nginx reverse proxy..."
+cat > /etc/nginx/conf.d/smart-campus.conf <<'EOF'
+${nginx_conf}
+EOF
+
+# Asegurar que no haya conflicto con el server block por defecto
+if [ -f /etc/nginx/default.d/ssl.conf ]; then
+  mv /etc/nginx/default.d/ssl.conf /etc/nginx/default.d/ssl.conf.bak || true
+fi
+
+# Validar y arrancar Nginx
+nginx -t
+systemctl enable nginx
+systemctl start nginx
 
 # Crear directorio de despliegue
 DEPLOY_DIR="/opt/${project_name}"
@@ -194,22 +210,22 @@ JWT_SECRET=change-me-in-production
 EOF
 
 cat > apps/welfare-frontend/.env.docker <<EOF
-NEXT_PUBLIC_SCHOLARSHIP_API_URL=http://$NLB_IP:3000
-NEXT_PUBLIC_SOCIOECONOMIC_API_URL=http://$NLB_IP:3001
-NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=http://$NLB_IP:3002
-NEXT_PUBLIC_API_GATEWAY_URL=http://$NLB_IP:8080
+NEXT_PUBLIC_SCHOLARSHIP_API_URL=/api/scholarships
+NEXT_PUBLIC_SOCIOECONOMIC_API_URL=/api/socioeconomic
+NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=/api/psychological
+NEXT_PUBLIC_API_GATEWAY_URL=/api/gateway
 EOF
 
-# Override de docker-compose para produccion con la IP del NLB
+# Override de docker-compose para produccion con paths relativos
 cat > docker-compose.prod.yml <<EOF
 services:
   welfare-frontend:
     build:
       args:
-        NEXT_PUBLIC_SCHOLARSHIP_API_URL: http://$NLB_IP:3000
-        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: http://$NLB_IP:3001
-        NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: http://$NLB_IP:3002
-        NEXT_PUBLIC_API_GATEWAY_URL: http://$NLB_IP:8080
+        NEXT_PUBLIC_SCHOLARSHIP_API_URL: /api/scholarships
+        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: /api/socioeconomic
+        NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: /api/psychological
+        NEXT_PUBLIC_API_GATEWAY_URL: /api/gateway
 EOF
 
 # Construir e iniciar servicios
@@ -217,4 +233,4 @@ echo "[user-data] Construyendo e iniciando microservicios con Docker Compose..."
 docker compose -f docker-compose.yml -f docker-compose.prod.yml pull || true
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
-echo "[user-data] Configuracion finalizada. Servicios disponibles en http://$NLB_IP"
+echo "[user-data] Configuracion finalizada. Frontend disponible en http://$NLB_IP"
