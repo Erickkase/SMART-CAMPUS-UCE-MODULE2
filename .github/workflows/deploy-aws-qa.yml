@@ -49,6 +49,15 @@ jobs:
           aws-session-token: ${{ github.event.inputs.aws_session_token }}
           aws-region: ${{ github.event.inputs.aws_region }}
 
+      - name: Validate AWS credentials
+        run: |
+          echo "Validating AWS credentials before Terraform operations..."
+          aws sts get-caller-identity || {
+            echo "::error::AWS credentials are invalid or expired."
+            echo "::error::AWS Academy session tokens expire quickly. Please regenerate the credentials from AWS Academy and re-run this workflow."
+            exit 1
+          }
+
       - name: Terraform Init
         run: |
           terraform init \
