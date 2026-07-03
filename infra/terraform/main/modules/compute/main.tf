@@ -104,6 +104,7 @@ resource "aws_launch_template" "microservices" {
     environment     = var.environment
     nlb_ip          = var.nlb_ip
     efs_dns         = aws_efs_file_system.data.dns_name
+    nginx_conf      = templatefile("${path.module}/../../templates/nginx.conf.tpl", {})
   }))
 
   vpc_security_group_ids = [aws_security_group.ec2.id]
