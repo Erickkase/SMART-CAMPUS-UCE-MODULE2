@@ -42,7 +42,7 @@ echo "[user-data] Montando filesystem EFS..."
 EFS_DNS="${efs_dns}"
 mkdir -p /data
 mount -t efs -o tls "$EFS_DNS:/" /data || mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 "$EFS_DNS:/" /data
-mkdir -p /data/postgres /data/mongo /data/psychological-postgres /data/subject-postgres /data/enrollment-postgres /data/student-postgres /data/notification-postgres
+mkdir -p /data/postgres /data/mongo /data/psychological-postgres /data/subject-postgres /data/enrollment-postgres /data/student-postgres /data/notification-postgres /data/appointment-postgres
 echo "$EFS_DNS:/ /data efs _netdev,tls 0 0" >> /etc/fstab
 
 # Configurar Nginx como reverse proxy
@@ -195,6 +195,26 @@ DB_SYNCHRONIZE=true
 DB_LOGGING=false
 EOF
 
+cat > apps/appointment-service/.env.docker <<EOF
+NODE_ENV=production
+PORT=3008
+CORS_ORIGIN=*
+AUTH_ENABLED=false
+JWT_SECRET=change-me-in-production
+JWT_ISSUER=smart-campus-uce
+JWT_AUDIENCE=appointment-service
+DB_ENABLED=true
+DB_HOST=appointment-postgres
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=appointment_db
+DB_SYNCHRONIZE=true
+DB_LOGGING=false
+STUDENT_VALIDATION_ENABLED=true
+STUDENT_SERVICE_URL=http://student-service:3006
+EOF
+
 cat > apps/api-gateway/.env.docker <<EOF
 PORT=8080
 CORS_ORIGIN=*
@@ -205,6 +225,7 @@ SUBJECT_SERVICE_URL=http://subject-service:3004
 ENROLLMENT_SERVICE_URL=http://enrollment-service:3005
 STUDENT_SERVICE_URL=http://student-service:3006
 NOTIFICATION_SERVICE_URL=http://notification-service:3007
+APPOINTMENT_SERVICE_URL=http://appointment-service:3008
 AUTH_ENABLED=false
 JWT_SECRET=change-me-in-production
 EOF
@@ -225,6 +246,7 @@ services:
         NEXT_PUBLIC_SCHOLARSHIP_API_URL: /api/scholarships
         NEXT_PUBLIC_SOCIOECONOMIC_API_URL: /api/socioeconomic
         NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: /api/psychological
+        NEXT_PUBLIC_APPOINTMENT_API_URL: /api/appointments
         NEXT_PUBLIC_API_GATEWAY_URL: /api/gateway
 EOF
 

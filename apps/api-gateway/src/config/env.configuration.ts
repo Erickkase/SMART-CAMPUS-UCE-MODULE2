@@ -14,5 +14,6 @@ export default () => ({
     subject: process.env.SUBJECT_SERVICE_URL ?? 'http://localhost:3004',
     enrollment: process.env.ENROLLMENT_SERVICE_URL ?? 'http://localhost:3005',
     student: process.env.STUDENT_SERVICE_URL ?? 'http://localhost:3006',
+    appointment: process.env.APPOINTMENT_SERVICE_URL ?? 'http://localhost:3008',
   },
 });

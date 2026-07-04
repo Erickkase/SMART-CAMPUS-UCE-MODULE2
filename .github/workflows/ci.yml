@@ -35,6 +35,9 @@ jobs:
       - name: Build notification-service
         run: npm run build:notification
 
+      - name: Build appointment-service
+        run: npm run build:appointment
+
       - name: Run tests
         run: npm run test -- --passWithNoTests
 

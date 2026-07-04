@@ -28,6 +28,8 @@ jobs:
             dockerfile: apps/psychological-care-service/Dockerfile
           - service: notification-service
             dockerfile: apps/notification-service/Dockerfile
+          - service: appointment-service
+            dockerfile: apps/appointment-service/Dockerfile
           - service: welfare-frontend
             dockerfile: apps/welfare-frontend/Dockerfile
             build_args: |
