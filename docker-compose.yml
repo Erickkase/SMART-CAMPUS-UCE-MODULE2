@@ -219,6 +219,38 @@ services:
       notification-postgres:
         condition: service_healthy
 
+  appointment-postgres:
+    image: postgres:16
+    container_name: appointment-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: appointment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - appointment_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appointment_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  appointment-service:
+    build:
+      context: .
+      dockerfile: apps/appointment-service/Dockerfile
+    container_name: appointment-service
+    restart: unless-stopped
+    env_file:
+      - apps/appointment-service/.env.docker
+    ports:
+      - "3008:3008"
+    depends_on:
+      appointment-postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: .
@@ -236,6 +268,7 @@ services:
       - subject-service
       - enrollment-service
       - student-service
+      - appointment-service
 
   welfare-frontend:
     build:
@@ -258,6 +291,7 @@ services:
       - socioeconomic-form-service
       - psychological-care-service
       - student-service
+      - appointment-service
 
 volumes:
   scholarship_postgres_data:
@@ -267,3 +301,4 @@ volumes:
   enrollment_postgres_data:
   student_postgres_data:
   notification_postgres_data:
+  appointment_postgres_data:
