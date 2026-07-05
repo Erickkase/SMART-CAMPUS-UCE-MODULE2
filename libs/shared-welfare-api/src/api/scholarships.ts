@@ -12,6 +12,14 @@ export async function getScholarships(
   return response.data;
 }
 
+export async function getScholarshipById(
+  client: AxiosInstance,
+  id: string,
+): Promise<Scholarship> {
+  const response = await client.get<Scholarship>(`/scholarships/${id}`);
+  return response.data;
+}
+
 export async function createScholarship(
   client: AxiosInstance,
   payload: CreateScholarshipPayload,
