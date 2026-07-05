@@ -2,6 +2,7 @@ import {
   createSocioeconomicForm,
   deleteSocioeconomicForm,
   getSocioeconomicFormById,
+  getSocioeconomicFormByStudentId,
   getSocioeconomicForms,
   updateSocioeconomicForm,
   type CreateSocioeconomicFormPayload,
@@ -30,6 +31,12 @@ export async function getSocioeconomicFormDetail(
   id: string,
 ): Promise<SocioeconomicForm> {
   return getSocioeconomicFormById(welfareApi, id);
+}
+
+export async function getSocioeconomicFormByStudent(
+  studentId: string,
+): Promise<SocioeconomicForm> {
+  return getSocioeconomicFormByStudentId(welfareApi, studentId);
 }
 
 export async function updateSocioeconomicFormRequest(

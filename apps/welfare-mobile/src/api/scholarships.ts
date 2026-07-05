@@ -1,6 +1,7 @@
 import {
   createScholarship,
   deleteScholarship,
+  getScholarshipById,
   getScholarships,
   updateScholarshipStatus,
   type CreateScholarshipPayload,
@@ -17,6 +18,10 @@ export type {
 
 export async function getScholarshipsList(): Promise<Scholarship[]> {
   return getScholarships(welfareApi);
+}
+
+export async function getScholarshipDetail(id: string): Promise<Scholarship> {
+  return getScholarshipById(welfareApi, id);
 }
 
 export async function createScholarshipRequest(

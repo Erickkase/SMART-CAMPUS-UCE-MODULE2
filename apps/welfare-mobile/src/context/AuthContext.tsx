@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { getToken, removeToken, setToken } from '../utils/storage';
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -16,14 +16,12 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const TOKEN_KEY = 'welfare-auth-token';
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    SecureStore.getItemAsync(TOKEN_KEY)
+    getToken()
       .then((token) => {
         setIsAuthenticated(Boolean(token));
       })
@@ -34,13 +32,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (_email: string, _password: string): Promise<void> => {
     // Authentication service is not enabled yet. Simulate a successful login
-    // by storing a placeholder token.
-    await SecureStore.setItemAsync(TOKEN_KEY, 'mock-token');
+    // by storing a placeholder token. The token is still attached to every
+    // API request so the app is ready once ACT-009 centralizes auth.
+    await setToken('mock-token');
     setIsAuthenticated(true);
   };
 
   const logout = async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await removeToken();
     setIsAuthenticated(false);
   };
 
