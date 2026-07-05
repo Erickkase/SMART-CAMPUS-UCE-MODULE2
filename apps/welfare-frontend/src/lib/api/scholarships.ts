@@ -1,47 +1,39 @@
+import {
+  createScholarship as createScholarshipBase,
+  deleteScholarship as deleteScholarshipBase,
+  getScholarships as getScholarshipsBase,
+  updateScholarshipStatus as updateScholarshipStatusBase,
+  type CreateScholarshipPayload,
+  type Scholarship,
+  type ScholarshipStatus,
+  type UpdateScholarshipStatusPayload,
+} from '@smart-campus/shared-welfare-api';
 import { scholarshipApi } from './http-client';
 
-export type ScholarshipStatus = 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED';
-
-export interface Scholarship {
-  id: string;
-  studentId: string;
-  scholarshipType: string;
-  reason: string;
-  status: ScholarshipStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateScholarshipPayload {
-  studentId: string;
-  scholarshipType: string;
-  reason: string;
-  status: ScholarshipStatus;
-}
+export type {
+  Scholarship,
+  ScholarshipStatus,
+  CreateScholarshipPayload,
+  UpdateScholarshipStatusPayload,
+};
 
 export async function getScholarships(): Promise<Scholarship[]> {
-  const response = await scholarshipApi.get<Scholarship[]>('/scholarships');
-  return response.data;
+  return getScholarshipsBase(scholarshipApi);
 }
 
 export async function createScholarship(
   payload: CreateScholarshipPayload,
 ): Promise<Scholarship> {
-  const response = await scholarshipApi.post<Scholarship>('/scholarships', payload);
-  return response.data;
+  return createScholarshipBase(scholarshipApi, payload);
 }
 
 export async function updateScholarshipStatus(
   id: string,
-  status: Extract<ScholarshipStatus, 'APPROVED' | 'REJECTED'>,
+  status: UpdateScholarshipStatusPayload,
 ): Promise<Scholarship> {
-  const response = await scholarshipApi.patch<Scholarship>(
-    `/scholarships/${id}/status`,
-    { status },
-  );
-  return response.data;
+  return updateScholarshipStatusBase(scholarshipApi, id, status);
 }
 
 export async function deleteScholarship(id: string): Promise<void> {
-  await scholarshipApi.delete(`/scholarships/${id}`);
+  return deleteScholarshipBase(scholarshipApi, id);
 }
