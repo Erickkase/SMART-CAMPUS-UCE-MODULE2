@@ -1,32 +1,56 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Button } from '../../../src/components/Button';
-import { Input } from '../../../src/components/Input';
-import { createSocioeconomicFormRequest } from '../../../src/api/socioeconomic-forms';
-import { getErrorMessage } from '../../../src/utils/errors';
-import { isValidUuid } from '../../../src/utils/validation';
-import { colors } from '../../../src/theme/colors';
+import { Button } from '../../../../src/components/Button';
+import { Input } from '../../../../src/components/Input';
+import { Loading } from '../../../../src/components/Loading';
+import {
+  getSocioeconomicFormDetail,
+  updateSocioeconomicFormRequest,
+  type SocioeconomicForm,
+} from '../../../../src/api/socioeconomic-forms';
+import { getErrorMessage } from '../../../../src/utils/errors';
+import { colors } from '../../../../src/theme/colors';
 
-export default function NewSocioeconomicFormScreen() {
+export default function EditSocioeconomicFormScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [studentId, setStudentId] = useState('');
+  const [form, setForm] = useState<SocioeconomicForm | null>(null);
   const [familyIncome, setFamilyIncome] = useState('');
   const [housingType, setHousingType] = useState('');
   const [familyMembers, setFamilyMembers] = useState('');
   const [employmentStatus, setEmploymentStatus] = useState('');
   const [vulnerabilityFactors, setVulnerabilityFactors] = useState('');
   const [observations, setObservations] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const loadForm = async () => {
+      try {
+        const data = await getSocioeconomicFormDetail(id);
+        setForm(data);
+        setFamilyIncome(String(data.familyIncome));
+        setHousingType(data.housingType);
+        setFamilyMembers(String(data.familyMembers));
+        setEmploymentStatus(data.employmentStatus);
+        setVulnerabilityFactors(data.vulnerabilityFactors);
+        setObservations(data.observations);
+      } catch (err) {
+        setError(
+          getErrorMessage(err, 'Failed to load socioeconomic form.'),
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadForm();
+  }, [id]);
+
   const handleSubmit = async () => {
     setError(null);
-
-    if (!isValidUuid(studentId)) {
-      setError('Student ID must be a valid UUID.');
-      return;
-    }
 
     const income = Number(familyIncome);
     const members = Number(familyMembers);
@@ -55,8 +79,7 @@ export default function NewSocioeconomicFormScreen() {
 
     setIsSubmitting(true);
     try {
-      await createSocioeconomicFormRequest({
-        studentId,
+      await updateSocioeconomicFormRequest(id, {
         familyIncome: income,
         housingType: housingType.trim(),
         familyMembers: members,
@@ -64,19 +87,35 @@ export default function NewSocioeconomicFormScreen() {
         vulnerabilityFactors: vulnerabilityFactors.trim(),
         observations: observations.trim(),
       });
-      router.back();
+      router.replace(`/(tabs)/socioeconomic-forms/${id}`);
     } catch (err) {
       setError(
-        getErrorMessage(err, 'Failed to create form. Please check your input.'),
+        getErrorMessage(err, 'Failed to update form. Please check your input.'),
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (error || !form) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Edit Socioeconomic Form</Text>
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>{error ?? 'Form not found.'}</Text>
+        </View>
+        <Button title="Go Back" onPress={() => router.back()} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Socioeconomic Form</Text>
+      <Text style={styles.title}>Edit Socioeconomic Form</Text>
 
       {error && (
         <View style={styles.errorBox}>
@@ -86,9 +125,8 @@ export default function NewSocioeconomicFormScreen() {
 
       <Input
         label="Student ID"
-        placeholder="00000000-0000-0000-0000-000000000000"
-        value={studentId}
-        onChangeText={setStudentId}
+        value={form.studentId}
+        editable={false}
       />
       <Input
         label="Family Income"
@@ -136,18 +174,9 @@ export default function NewSocioeconomicFormScreen() {
       />
 
       <Button
-        title="Submit Form"
+        title="Save Changes"
         onPress={handleSubmit}
-        disabled={
-          isSubmitting ||
-          !studentId ||
-          !familyIncome ||
-          !housingType ||
-          !familyMembers ||
-          !employmentStatus ||
-          !vulnerabilityFactors ||
-          !observations
-        }
+        disabled={isSubmitting}
       />
     </ScrollView>
   );

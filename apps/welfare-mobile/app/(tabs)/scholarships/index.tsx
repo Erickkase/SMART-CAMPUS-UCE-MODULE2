@@ -16,6 +16,7 @@ import {
   removeScholarship,
   type Scholarship,
 } from '../../../src/api/scholarships';
+import { getErrorMessage } from '../../../src/utils/errors';
 import { colors } from '../../../src/theme/colors';
 
 export default function ScholarshipsListScreen() {
@@ -36,7 +37,7 @@ export default function ScholarshipsListScreen() {
       const data = await getScholarshipsList();
       setScholarships(data);
     } catch (err) {
-      setError('Failed to load scholarships. Please try again.');
+      setError(getErrorMessage(err, 'Failed to load scholarships. Please try again.'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -54,7 +55,7 @@ export default function ScholarshipsListScreen() {
       await removeScholarship(id);
       setScholarships((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
-      setError('Failed to delete scholarship.');
+      setError(getErrorMessage(err, 'Failed to delete scholarship.'));
     }
   };
 

@@ -10,17 +10,22 @@ import {
 import { Button } from '../../../src/components/Button';
 import { Card } from '../../../src/components/Card';
 import { ErrorMessage } from '../../../src/components/ErrorMessage';
+import { Input } from '../../../src/components/Input';
 import { Loading } from '../../../src/components/Loading';
 import {
+  getSocioeconomicFormByStudent,
   getSocioeconomicFormsList,
   removeSocioeconomicForm,
   type SocioeconomicForm,
 } from '../../../src/api/socioeconomic-forms';
+import { getErrorMessage } from '../../../src/utils/errors';
+import { isValidUuid } from '../../../src/utils/validation';
 import { colors } from '../../../src/theme/colors';
 
 export default function SocioeconomicFormsListScreen() {
   const router = useRouter();
   const [forms, setForms] = useState<SocioeconomicForm[]>([]);
+  const [studentIdQuery, setStudentIdQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +41,43 @@ export default function SocioeconomicFormsListScreen() {
       const data = await getSocioeconomicFormsList();
       setForms(data);
     } catch (err) {
-      setError('Failed to load socioeconomic forms. Please try again.');
+      setError(
+        getErrorMessage(err, 'Failed to load socioeconomic forms. Please try again.'),
+      );
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
+  };
+
+  const handleSearch = async () => {
+    setError(null);
+    if (!studentIdQuery.trim()) {
+      await fetchForms();
+      return;
+    }
+
+    if (!isValidUuid(studentIdQuery.trim())) {
+      setError('Student ID must be a valid UUID.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const data = await getSocioeconomicFormByStudent(studentIdQuery.trim());
+      setForms(data ? [data] : []);
+    } catch (err) {
+      setError(
+        getErrorMessage(err, 'Failed to search socioeconomic form.'),
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setStudentIdQuery('');
+    void fetchForms();
   };
 
   useFocusEffect(
@@ -54,7 +91,7 @@ export default function SocioeconomicFormsListScreen() {
       await removeSocioeconomicForm(id);
       setForms((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
-      setError('Failed to delete form.');
+      setError(getErrorMessage(err, 'Failed to delete form.'));
     }
   };
 
@@ -72,6 +109,11 @@ export default function SocioeconomicFormsListScreen() {
           <Button
             title="View"
             onPress={() => router.push(`/(tabs)/socioeconomic-forms/${item.id}`)}
+          />
+          <View style={styles.spacer} />
+          <Button
+            title="Edit"
+            onPress={() => router.push(`/(tabs)/socioeconomic-forms/${item.id}/edit`)}
           />
           <View style={styles.spacer} />
           <Button
@@ -97,6 +139,23 @@ export default function SocioeconomicFormsListScreen() {
           onPress={() => router.push('/(tabs)/socioeconomic-forms/new')}
         />
       </View>
+
+      <View style={styles.searchRow}>
+        <View style={styles.searchInput}>
+          <Input
+            placeholder="Search by Student ID"
+            value={studentIdQuery}
+            onChangeText={setStudentIdQuery}
+            autoCapitalize="none"
+          />
+        </View>
+        <Button title="Search" onPress={handleSearch} />
+      </View>
+      {studentIdQuery.length > 0 && (
+        <View style={styles.clearRow}>
+          <Button title="Clear" onPress={handleClearSearch} variant="danger" />
+        </View>
+      )}
 
       {error && <ErrorMessage message={error} />}
 
@@ -135,6 +194,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: colors.navy,
+  },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  searchInput: {
+    flex: 1,
+    marginRight: 8,
+  },
+  clearRow: {
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
   list: {
     paddingBottom: 24,

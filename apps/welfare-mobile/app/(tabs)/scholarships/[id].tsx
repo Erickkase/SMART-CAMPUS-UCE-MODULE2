@@ -7,9 +7,10 @@ import { ErrorMessage } from '../../../src/components/ErrorMessage';
 import { Loading } from '../../../src/components/Loading';
 import {
   changeScholarshipStatus,
-  getScholarshipsList,
+  getScholarshipDetail,
   type Scholarship,
 } from '../../../src/api/scholarships';
+import { getErrorMessage } from '../../../src/utils/errors';
 import { colors } from '../../../src/theme/colors';
 
 export default function ScholarshipDetailScreen() {
@@ -22,15 +23,12 @@ export default function ScholarshipDetailScreen() {
   useEffect(() => {
     const loadScholarship = async () => {
       try {
-        const list = await getScholarshipsList();
-        const found = list.find((item) => item.id === id);
-        if (!found) {
-          setError('Scholarship not found.');
-        } else {
-          setScholarship(found);
-        }
+        const data = await getScholarshipDetail(id);
+        setScholarship(data);
       } catch (err) {
-        setError('Failed to load scholarship details.');
+        setError(
+          getErrorMessage(err, 'Failed to load scholarship details.'),
+        );
       } finally {
         setIsLoading(false);
       }
@@ -45,9 +43,12 @@ export default function ScholarshipDetailScreen() {
       const updated = await changeScholarshipStatus(scholarship.id, status);
       setScholarship(updated);
     } catch (err) {
-      setError('Failed to update status.');
+      setError(getErrorMessage(err, 'Failed to update status.'));
     }
   };
+
+  const canReview =
+    scholarship?.status === 'PENDING' || scholarship?.status === 'UNDER_REVIEW';
 
   if (isLoading) {
     return <Loading />;
@@ -80,7 +81,7 @@ export default function ScholarshipDetailScreen() {
         <Text style={styles.value}>{scholarship.studentId}</Text>
       </Card>
 
-      {scholarship.status === 'PENDING' && (
+      {canReview && (
         <View style={styles.actions}>
           <Button
             title="Approve"

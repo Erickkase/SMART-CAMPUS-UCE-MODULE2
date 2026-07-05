@@ -4,6 +4,8 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../../src/components/Button';
 import { Input } from '../../../src/components/Input';
 import { createScholarshipRequest } from '../../../src/api/scholarships';
+import { getErrorMessage } from '../../../src/utils/errors';
+import { isValidUuid } from '../../../src/utils/validation';
 import { colors } from '../../../src/theme/colors';
 
 export default function NewScholarshipScreen() {
@@ -16,6 +18,12 @@ export default function NewScholarshipScreen() {
 
   const handleSubmit = async () => {
     setError(null);
+
+    if (!isValidUuid(studentId)) {
+      setError('Student ID must be a valid UUID.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await createScholarshipRequest({
@@ -26,7 +34,9 @@ export default function NewScholarshipScreen() {
       });
       router.back();
     } catch (err) {
-      setError('Failed to create scholarship. Please check your input.');
+      setError(
+        getErrorMessage(err, 'Failed to create scholarship. Please check your input.'),
+      );
     } finally {
       setIsSubmitting(false);
     }
