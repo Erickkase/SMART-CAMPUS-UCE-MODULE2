@@ -58,5 +58,7 @@ jobs:
         run: |
           npm ci
           npm run typecheck
-          npm run lint || true
+          npm run typecheck:test
+          npm run lint
+          npm test
           npx expo export --platform web
