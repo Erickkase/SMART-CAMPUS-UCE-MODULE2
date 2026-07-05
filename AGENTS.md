@@ -12,12 +12,16 @@ High-signal notes for OpenCode sessions working in this repo.
   - `apps/subject-service`, `apps/enrollment-service`, `apps/student-service`, `apps/notification-service` — NestJS; PostgreSQL/TypeORM or in-memory.
   - `apps/api-gateway` — NestJS reverse proxy to all backend services.
   - `apps/welfare-frontend` — Next.js 15, separate `package.json`, path alias `@/*`.
+  - `apps/welfare-mobile` — React Native / Expo mobile app, separate `package.json`, uses Expo Router.
+- `libs/shared-welfare-api` — Shared TypeScript API client and types used by `welfare-frontend` and `welfare-mobile`.
 - Infrastructure as code: `infra/terraform/` (AWS QA, single EC2, Docker Compose on host).
 
 ## Install
 
 - Root deps: `npm install` at repo root (backend + shared tooling).
 - Frontend deps: `cd apps/welfare-frontend && npm install` (own `package-lock.json`).
+- Shared API deps: `cd libs/shared-welfare-api && npm install && npm run build`.
+- Mobile deps: `cd apps/welfare-mobile && npm install` (own `package-lock.json`).
 
 ## Run / build
 
@@ -31,6 +35,7 @@ High-signal notes for OpenCode sessions working in this repo.
   - `npm run build:appointment`
 - Or use `npx nest start <app> --watch` / `npx nest build <app>`.
 - Frontend dev: `cd apps/welfare-frontend && npm run dev` → port `3003`.
+- Mobile dev: `cd apps/welfare-mobile && npm run start` → scan QR with Expo Go or press `a`/`i`/`w`.
 - Docker full stack: `docker compose up -d --build` from root.
 
 ## Ports (defaults and collisions)
@@ -57,6 +62,8 @@ High-signal notes for OpenCode sessions working in this repo.
   - `NEXT_PUBLIC_SOCIOECONOMIC_API_URL`
   - `NEXT_PUBLIC_PSYCHOLOGICAL_API_URL`
   - `NEXT_PUBLIC_APPOINTMENT_API_URL`
+- Mobile needs `apps/welfare-mobile/.env` (dev):
+  - `EXPO_PUBLIC_API_GATEWAY_URL`
 - Note: `.env.example` sets psychological API to `http://localhost:3002` (Docker port); for local psychological backend default use `http://localhost:3003`.
 
 ## Tests
@@ -92,5 +99,5 @@ High-signal notes for OpenCode sessions working in this repo.
 
 ## Tooling notes
 
-- No repo-wide lint / format scripts. Frontend has `npm run lint` (Next.js ESLint). CI only builds and tests.
+- No repo-wide lint / format scripts. Frontend has `npm run lint` (Next.js ESLint). Mobile has `npm run lint` and `npm run typecheck` (Expo). CI only builds and tests.
 - Root `tsconfig.json` includes `apps/**/*.ts`; frontend uses its own `tsconfig.json` with `bundler` module resolution and `@/*` alias.
