@@ -26,6 +26,7 @@
     "build:enrollment": "nest build enrollment-service",
     "build:student": "nest build student-service",
     "build:notification": "nest build notification-service",
+    "build:api-gateway": "nest build api-gateway",
     "build:appointment": "nest build appointment-service",
     "test": "jest",
     "test:watch": "jest --watch",
