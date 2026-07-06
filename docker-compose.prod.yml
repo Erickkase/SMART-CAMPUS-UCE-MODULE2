@@ -27,6 +27,10 @@ services:
     image: ghcr.io/erickkase/smart-campus-uce-module2/notification-service:${IMAGE_TAG:-qa}
     build: !reset null
 
+  appointment-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/appointment-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
   api-gateway:
     image: ghcr.io/erickkase/smart-campus-uce-module2/api-gateway:${IMAGE_TAG:-qa}
     build: !reset null

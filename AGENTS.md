@@ -4,17 +4,24 @@ High-signal notes for OpenCode sessions working in this repo.
 
 ## Repo layout
 
-- NestJS monorepo (Nest CLI monorepo mode) with three backend apps and one Next.js frontend.
+- NestJS monorepo (Nest CLI monorepo mode) with several backend apps, an API gateway, and one Next.js frontend.
   - `apps/scholarship-service` — default NestJS app; PostgreSQL/TypeORM or in-memory.
   - `apps/socioeconomic-form-service` — NestJS; MongoDB/Mongoose or in-memory.
   - `apps/psychological-care-service` — NestJS; PostgreSQL/TypeORM or in-memory.
+  - `apps/appointment-service` — NestJS; PostgreSQL/TypeORM or in-memory; manages psychological care appointments and validates students against `student-service`.
+  - `apps/subject-service`, `apps/enrollment-service`, `apps/student-service`, `apps/notification-service` — NestJS; PostgreSQL/TypeORM or in-memory.
+  - `apps/api-gateway` — NestJS reverse proxy to all backend services.
   - `apps/welfare-frontend` — Next.js 15, separate `package.json`, path alias `@/*`.
+  - `apps/welfare-mobile` — React Native / Expo mobile app, separate `package.json`, uses Expo Router.
+- `libs/shared-welfare-api` — Shared TypeScript API client and types used by `welfare-frontend` and `welfare-mobile`.
 - Infrastructure as code: `infra/terraform/` (AWS QA, single EC2, Docker Compose on host).
 
 ## Install
 
 - Root deps: `npm install` at repo root (backend + shared tooling).
 - Frontend deps: `cd apps/welfare-frontend && npm install` (own `package-lock.json`).
+- Shared API deps: `cd libs/shared-welfare-api && npm install && npm run build`.
+- Mobile deps: `cd apps/welfare-mobile && npm install` (own `package-lock.json`).
 
 ## Run / build
 
@@ -22,10 +29,13 @@ High-signal notes for OpenCode sessions working in this repo.
 - Other apps need explicit scripts:
   - `npm run start:socioeconomic:dev`
   - `npm run start:psychological:dev`
+  - `npm run start:appointment:dev`
   - `npm run build:socioeconomic`
   - `npm run build:psychological`
+  - `npm run build:appointment`
 - Or use `npx nest start <app> --watch` / `npx nest build <app>`.
 - Frontend dev: `cd apps/welfare-frontend && npm run dev` → port `3003`.
+- Mobile dev: `cd apps/welfare-mobile && npm run start` → scan QR with Expo Go or press `a`/`i`/`w`.
 - Docker full stack: `docker compose up -d --build` from root.
 
 ## Ports (defaults and collisions)
@@ -36,6 +46,7 @@ High-signal notes for OpenCode sessions working in this repo.
 | socioeconomic-form-service | 3001 | 3001 |
 | psychological-care-service | 3003 | 3002 |
 | welfare-frontend (dev) | 3003 | 3003 |
+| appointment-service | 3008 | 3008 |
 
 - `psychological-care-service` defaults to `3003`, which collides with the Next.js dev server. Run only one on that port or override `PORT`.
 - Docker Compose exposes the frontend on host `3003` (container `3002`), while psychological-care-service is on host `3002`. Some docs still say `3002` for the frontend — trust `docker-compose.yml`.
@@ -50,6 +61,9 @@ High-signal notes for OpenCode sessions working in this repo.
   - `NEXT_PUBLIC_SCHOLARSHIP_API_URL`
   - `NEXT_PUBLIC_SOCIOECONOMIC_API_URL`
   - `NEXT_PUBLIC_PSYCHOLOGICAL_API_URL`
+  - `NEXT_PUBLIC_APPOINTMENT_API_URL`
+- Mobile needs `apps/welfare-mobile/.env` (dev):
+  - `EXPO_PUBLIC_API_GATEWAY_URL`
 - Note: `.env.example` sets psychological API to `http://localhost:3002` (Docker port); for local psychological backend default use `http://localhost:3003`.
 
 ## Tests
@@ -85,5 +99,5 @@ High-signal notes for OpenCode sessions working in this repo.
 
 ## Tooling notes
 
-- No repo-wide lint / format scripts. Frontend has `npm run lint` (Next.js ESLint). CI only builds and tests.
+- No repo-wide lint / format scripts. Frontend has `npm run lint` (Next.js ESLint). Mobile has `npm run lint` and `npm run typecheck` (Expo). CI only builds and tests.
 - Root `tsconfig.json` includes `apps/**/*.ts`; frontend uses its own `tsconfig.json` with `bundler` module resolution and `@/*` alias.
