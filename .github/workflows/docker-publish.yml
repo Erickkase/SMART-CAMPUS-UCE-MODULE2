@@ -40,6 +40,7 @@ jobs:
             dockerfile: apps/appointment-service/Dockerfile
           - service: welfare-frontend
             dockerfile: apps/welfare-frontend/Dockerfile
+            no_cache: true
             build_args: |
               NEXT_PUBLIC_SCHOLARSHIP_API_URL=/api/scholarships
               NEXT_PUBLIC_SOCIOECONOMIC_API_URL=/api/socioeconomic
@@ -80,5 +81,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: ${{ matrix.build_args }}
           provenance: false
+          no-cache: ${{ matrix.no_cache || false }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
