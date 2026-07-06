@@ -32,8 +32,20 @@ jobs:
       - name: Build psychological-care-service
         run: npm run build:psychological
 
+      - name: Build subject-service
+        run: npm run build:subject
+
+      - name: Build enrollment-service
+        run: npm run build:enrollment
+
+      - name: Build student-service
+        run: npm run build:student
+
       - name: Build notification-service
         run: npm run build:notification
+
+      - name: Build api-gateway
+        run: npm run build:api-gateway
 
       - name: Run tests
         run: npm run test -- --passWithNoTests

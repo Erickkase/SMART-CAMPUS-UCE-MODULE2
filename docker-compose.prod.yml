@@ -1,0 +1,36 @@
+services:
+  scholarship-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/scholarship-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  socioeconomic-form-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/socioeconomic-form-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  psychological-care-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/psychological-care-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  subject-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/subject-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  enrollment-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/enrollment-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  student-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/student-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  notification-service:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/notification-service:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  api-gateway:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/api-gateway:${IMAGE_TAG:-qa}
+    build: !reset null
+
+  welfare-frontend:
+    image: ghcr.io/erickkase/smart-campus-uce-module2/welfare-frontend:${IMAGE_TAG:-qa}
+    build: !reset null
