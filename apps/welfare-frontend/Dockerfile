@@ -12,8 +12,11 @@ ENV NEXT_PUBLIC_SOCIOECONOMIC_API_URL=$NEXT_PUBLIC_SOCIOECONOMIC_API_URL
 ENV NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=$NEXT_PUBLIC_PSYCHOLOGICAL_API_URL
 ENV NEXT_PUBLIC_API_GATEWAY_URL=$NEXT_PUBLIC_API_GATEWAY_URL
 
+# Shared dependency required by the file: resolution in package.json
+COPY libs/shared-welfare-api /libs/shared-welfare-api
+
 COPY apps/welfare-frontend/package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY apps/welfare-frontend ./
 
