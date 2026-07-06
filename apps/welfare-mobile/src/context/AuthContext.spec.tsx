@@ -28,6 +28,12 @@ function TestComponent() {
   );
 }
 
+async function flushPromises() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+}
+
 describe('AuthContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,6 +50,8 @@ describe('AuthContext', () => {
         </AuthProvider>,
       );
     });
+
+    await flushPromises();
 
     const findByTestId = (testID: string) =>
       root.root.findByProps({ testID }).props.children;
@@ -63,6 +71,8 @@ describe('AuthContext', () => {
         </AuthProvider>,
       );
     });
+
+    await flushPromises();
 
     const findByTestId = (testID: string) =>
       root.root.findByProps({ testID }).props.children;
@@ -84,11 +94,15 @@ describe('AuthContext', () => {
       );
     });
 
+    await flushPromises();
+
     const loginNode = root.root.findByProps({ testID: 'login' });
 
     await act(async () => {
       loginNode.props.onPress();
     });
+
+    await flushPromises();
 
     const findByTestId = (testID: string) =>
       root.root.findByProps({ testID }).props.children;
@@ -110,11 +124,15 @@ describe('AuthContext', () => {
       );
     });
 
+    await flushPromises();
+
     const logoutNode = root.root.findByProps({ testID: 'logout' });
 
     await act(async () => {
       logoutNode.props.onPress();
     });
+
+    await flushPromises();
 
     const findByTestId = (testID: string) =>
       root.root.findByProps({ testID }).props.children;
