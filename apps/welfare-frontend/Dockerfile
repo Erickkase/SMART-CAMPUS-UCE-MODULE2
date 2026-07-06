@@ -5,17 +5,20 @@ WORKDIR /app
 ARG NEXT_PUBLIC_SCHOLARSHIP_API_URL=/api/scholarships
 ARG NEXT_PUBLIC_SOCIOECONOMIC_API_URL=/api/socioeconomic
 ARG NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=/api/psychological
+ARG NEXT_PUBLIC_APPOINTMENT_API_URL=/api/appointments
 ARG NEXT_PUBLIC_API_GATEWAY_URL=/api/gateway
 
 ENV NEXT_PUBLIC_SCHOLARSHIP_API_URL=$NEXT_PUBLIC_SCHOLARSHIP_API_URL
 ENV NEXT_PUBLIC_SOCIOECONOMIC_API_URL=$NEXT_PUBLIC_SOCIOECONOMIC_API_URL
 ENV NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=$NEXT_PUBLIC_PSYCHOLOGICAL_API_URL
+ENV NEXT_PUBLIC_APPOINTMENT_API_URL=$NEXT_PUBLIC_APPOINTMENT_API_URL
 ENV NEXT_PUBLIC_API_GATEWAY_URL=$NEXT_PUBLIC_API_GATEWAY_URL
 
 # Shared dependency required by the file: resolution in package.json
 COPY libs/shared-welfare-api /libs/shared-welfare-api
+RUN cd /libs/shared-welfare-api && npm ci && npm run build
 
-COPY apps/welfare-frontend/package*.json ./
+COPY apps/welfare-frontend/package.json apps/welfare-frontend/package-lock.json ./
 RUN npm ci
 
 COPY apps/welfare-frontend ./
