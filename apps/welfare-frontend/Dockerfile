@@ -18,8 +18,9 @@ ENV NEXT_PUBLIC_API_GATEWAY_URL=$NEXT_PUBLIC_API_GATEWAY_URL
 COPY libs/shared-welfare-api /libs/shared-welfare-api
 RUN cd /libs/shared-welfare-api && npm ci && npm run build
 
-COPY apps/welfare-frontend/package.json apps/welfare-frontend/package-lock.json ./
+COPY apps/welfare-frontend/package.json ./
 RUN npm install
+RUN mkdir -p node_modules/@smart-campus && ln -s /libs/shared-welfare-api node_modules/@smart-campus/shared-welfare-api
 
 COPY apps/welfare-frontend ./
 
