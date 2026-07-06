@@ -19,6 +19,7 @@ COPY libs/shared-welfare-api /libs/shared-welfare-api
 RUN cd /libs/shared-welfare-api && npm ci && npm run build
 
 COPY apps/welfare-frontend/package.json apps/welfare-frontend/package-lock.json ./
+RUN ls -la
 RUN npm ci
 
 COPY apps/welfare-frontend ./
