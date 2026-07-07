@@ -392,6 +392,14 @@ The first explicit CQRS implementation in the monorepo is currently applied in:
 | --- | --- | --- |
 | `scholarship-service` | query handlers | command handlers |
 
+## Current Outbox Adoption
+
+The first outbox baseline in the monorepo is currently applied in:
+
+| Service | Purpose |
+| --- | --- |
+| `scholarship-service` | Persist and dispatch scholarship lifecycle events |
+
 ## Additional Release Files
 
 | File | Purpose |

@@ -1,11 +1,19 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Kafka, Producer } from 'kafkajs';
-import { Scholarship } from '../../domain/entities/scholarship.entity';
 import {
   SCHOLARSHIP_CREATED_TOPIC,
   SCHOLARSHIP_STATUS_UPDATED_TOPIC,
 } from './scholarship-mqtt-topics';
+
+type ScholarshipEventPayload = {
+  event: string;
+  scholarshipId: string;
+  studentId: string;
+  scholarshipType: string;
+  status: string;
+  occurredAt: string;
+};
 
 @Injectable()
 export class ScholarshipKafkaProducerService implements OnModuleDestroy {
@@ -22,27 +30,29 @@ export class ScholarshipKafkaProducerService implements OnModuleDestroy {
       'scholarship.events';
   }
 
-  async publishScholarshipCreated(scholarship: Scholarship): Promise<void> {
+  async publishScholarshipCreated(payload: ScholarshipEventPayload): Promise<void> {
     await this.publish({
-      key: scholarship.id,
-      event: SCHOLARSHIP_CREATED_TOPIC,
-      scholarshipId: scholarship.id,
-      studentId: scholarship.studentId,
-      scholarshipType: scholarship.scholarshipType,
-      status: scholarship.status,
-      occurredAt: scholarship.createdAt.toISOString(),
+      key: payload.scholarshipId,
+      event: payload.event,
+      scholarshipId: payload.scholarshipId,
+      studentId: payload.studentId,
+      scholarshipType: payload.scholarshipType,
+      status: payload.status,
+      occurredAt: payload.occurredAt,
     });
   }
 
-  async publishScholarshipStatusUpdated(scholarship: Scholarship): Promise<void> {
+  async publishScholarshipStatusUpdated(
+    payload: ScholarshipEventPayload,
+  ): Promise<void> {
     await this.publish({
-      key: scholarship.id,
-      event: SCHOLARSHIP_STATUS_UPDATED_TOPIC,
-      scholarshipId: scholarship.id,
-      studentId: scholarship.studentId,
-      scholarshipType: scholarship.scholarshipType,
-      status: scholarship.status,
-      occurredAt: scholarship.updatedAt.toISOString(),
+      key: payload.scholarshipId,
+      event: payload.event,
+      scholarshipId: payload.scholarshipId,
+      studentId: payload.studentId,
+      scholarshipType: payload.scholarshipType,
+      status: payload.status,
+      occurredAt: payload.occurredAt,
     });
   }
 

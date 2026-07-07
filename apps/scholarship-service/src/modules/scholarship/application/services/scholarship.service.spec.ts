@@ -7,18 +7,14 @@ import {
   ScholarshipRepository,
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
-import { ScholarshipKafkaProducerService } from '../../infrastructure/messaging/scholarship-kafka-producer.service';
-import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
-import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
+import { ScholarshipOutboxDispatcherService } from '../../infrastructure/outbox/scholarship-outbox-dispatcher.service';
 import { ScholarshipService } from './scholarship.service';
 
 describe('ScholarshipService', () => {
   let service: ScholarshipService;
   let repository: jest.Mocked<ScholarshipRepository>;
   let cacheService: jest.Mocked<ScholarshipCacheService>;
-  let mqttPublisher: jest.Mocked<ScholarshipMqttPublisherService>;
-  let kafkaProducer: jest.Mocked<ScholarshipKafkaProducerService>;
-  let rabbitMqPublisher: jest.Mocked<ScholarshipRabbitMqPublisherService>;
+  let outboxDispatcher: jest.Mocked<ScholarshipOutboxDispatcherService>;
 
   const scholarship = new Scholarship(
     '67e95da2-65f7-4de7-8dc0-622b7298236b',
@@ -40,23 +36,12 @@ describe('ScholarshipService', () => {
       delete: jest.fn(),
     };
 
-    mqttPublisher = {
-      publishScholarshipCreated: jest.fn(),
-      publishScholarshipStatusUpdated: jest.fn(),
+    outboxDispatcher = {
+      enqueueEvent: jest.fn(),
+      flushPendingEvents: jest.fn(),
+      onModuleInit: jest.fn(),
       onModuleDestroy: jest.fn(),
-    } as unknown as jest.Mocked<ScholarshipMqttPublisherService>;
-
-    kafkaProducer = {
-      publishScholarshipCreated: jest.fn(),
-      publishScholarshipStatusUpdated: jest.fn(),
-      onModuleDestroy: jest.fn(),
-    } as unknown as jest.Mocked<ScholarshipKafkaProducerService>;
-
-    rabbitMqPublisher = {
-      publishScholarshipCreated: jest.fn(),
-      publishScholarshipStatusUpdated: jest.fn(),
-      onModuleDestroy: jest.fn(),
-    } as unknown as jest.Mocked<ScholarshipRabbitMqPublisherService>;
+    } as unknown as jest.Mocked<ScholarshipOutboxDispatcherService>;
 
     cacheService = {
       getScholarshipList: jest.fn(),
@@ -77,16 +62,8 @@ describe('ScholarshipService', () => {
           useValue: cacheService,
         },
         {
-          provide: ScholarshipMqttPublisherService,
-          useValue: mqttPublisher,
-        },
-        {
-          provide: ScholarshipKafkaProducerService,
-          useValue: kafkaProducer,
-        },
-        {
-          provide: ScholarshipRabbitMqPublisherService,
-          useValue: rabbitMqPublisher,
+          provide: ScholarshipOutboxDispatcherService,
+          useValue: outboxDispatcher,
         },
       ],
     }).compile();
@@ -109,9 +86,8 @@ describe('ScholarshipService', () => {
     expect(result.status).toBe(ScholarshipStatus.PENDING);
     expect(repository.create).toHaveBeenCalledTimes(1);
     expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
-    expect(mqttPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
-    expect(kafkaProducer.publishScholarshipCreated).toHaveBeenCalledTimes(1);
-    expect(rabbitMqPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
+    expect(outboxDispatcher.enqueueEvent).toHaveBeenCalledTimes(1);
+    expect(outboxDispatcher.flushPendingEvents).toHaveBeenCalledTimes(1);
   });
 
   it('should return all scholarships', async () => {
@@ -162,15 +138,8 @@ describe('ScholarshipService', () => {
       ScholarshipStatus.APPROVED,
     );
     expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
-    expect(mqttPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
-      approvedScholarship,
-    );
-    expect(kafkaProducer.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
-      approvedScholarship,
-    );
-    expect(rabbitMqPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
-      approvedScholarship,
-    );
+    expect(outboxDispatcher.enqueueEvent).toHaveBeenCalledTimes(1);
+    expect(outboxDispatcher.flushPendingEvents).toHaveBeenCalledTimes(1);
   });
 
   it('should reject invalid status transitions', async () => {

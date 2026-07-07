@@ -16,9 +16,16 @@ import {
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
-import { ScholarshipKafkaProducerService } from '../../infrastructure/messaging/scholarship-kafka-producer.service';
-import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
-import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
+import { ScholarshipOutboxDispatcherService } from '../../infrastructure/outbox/scholarship-outbox-dispatcher.service';
+
+const createScholarshipEventPayload = (scholarship: Scholarship, event: string) => ({
+  event,
+  scholarshipId: scholarship.id,
+  studentId: scholarship.studentId,
+  scholarshipType: scholarship.scholarshipType,
+  status: scholarship.status,
+  occurredAt: scholarship.updatedAt.toISOString(),
+});
 
 @Injectable()
 export class ScholarshipService {
@@ -26,9 +33,7 @@ export class ScholarshipService {
     @Inject(SCHOLARSHIP_REPOSITORY)
     private readonly scholarshipRepository: ScholarshipRepository,
     private readonly scholarshipCacheService: ScholarshipCacheService,
-    private readonly scholarshipMqttPublisher: ScholarshipMqttPublisherService,
-    private readonly scholarshipKafkaProducer: ScholarshipKafkaProducerService,
-    private readonly scholarshipRabbitMqPublisher: ScholarshipRabbitMqPublisherService,
+    private readonly scholarshipOutboxDispatcher: ScholarshipOutboxDispatcherService,
   ) {}
 
   async createScholarship(
@@ -48,9 +53,10 @@ export class ScholarshipService {
 
     const createdScholarship = await this.scholarshipRepository.create(scholarship);
     await this.scholarshipCacheService.invalidateScholarshipList();
-    await this.scholarshipMqttPublisher.publishScholarshipCreated(createdScholarship);
-    await this.scholarshipKafkaProducer.publishScholarshipCreated(createdScholarship);
-    await this.scholarshipRabbitMqPublisher.publishScholarshipCreated(createdScholarship);
+    await this.scholarshipOutboxDispatcher.enqueueEvent(
+      createScholarshipEventPayload(createdScholarship, 'scholarship.created'),
+    );
+    await this.scholarshipOutboxDispatcher.flushPendingEvents();
     return createdScholarship;
   }
 
@@ -139,15 +145,13 @@ export class ScholarshipService {
     }
 
     await this.scholarshipCacheService.invalidateScholarshipList();
-    await this.scholarshipMqttPublisher.publishScholarshipStatusUpdated(
-      updatedScholarship,
+    await this.scholarshipOutboxDispatcher.enqueueEvent(
+      createScholarshipEventPayload(
+        updatedScholarship,
+        'scholarship.status.updated',
+      ),
     );
-    await this.scholarshipKafkaProducer.publishScholarshipStatusUpdated(
-      updatedScholarship,
-    );
-    await this.scholarshipRabbitMqPublisher.publishScholarshipStatusUpdated(
-      updatedScholarship,
-    );
+    await this.scholarshipOutboxDispatcher.flushPendingEvents();
 
     return updatedScholarship;
   }

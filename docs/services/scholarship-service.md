@@ -123,6 +123,16 @@ This service also publishes RabbitMQ messages to the `welfare.events` topic exch
 
 This service also publishes Kafka messages to the `scholarship.events` topic.
 
+## Transactional Outbox Baseline
+
+This service now stores scholarship lifecycle events in a dedicated outbox structure before dispatching them through MQTT, RabbitMQ, and Kafka.
+
+Current outbox responsibilities:
+
+- persist pending scholarship domain events
+- dispatch pending events through configured brokers
+- mark events as published after successful fan-out
+
 ## Local Execution
 
 From the monorepo root:

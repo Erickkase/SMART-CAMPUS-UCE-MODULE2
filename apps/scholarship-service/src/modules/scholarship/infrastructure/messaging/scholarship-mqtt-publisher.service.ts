@@ -1,11 +1,19 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MqttClient, connect } from 'mqtt';
-import { Scholarship } from '../../domain/entities/scholarship.entity';
 import {
   SCHOLARSHIP_CREATED_TOPIC,
   SCHOLARSHIP_STATUS_UPDATED_TOPIC,
 } from './scholarship-mqtt-topics';
+
+type ScholarshipEventPayload = {
+  event: string;
+  scholarshipId: string;
+  studentId: string;
+  scholarshipType: string;
+  status: string;
+  occurredAt: string;
+};
 
 @Injectable()
 export class ScholarshipMqttPublisherService implements OnModuleDestroy {
@@ -34,25 +42,27 @@ export class ScholarshipMqttPublisherService implements OnModuleDestroy {
     });
   }
 
-  async publishScholarshipCreated(scholarship: Scholarship): Promise<void> {
+  async publishScholarshipCreated(payload: ScholarshipEventPayload): Promise<void> {
     await this.publish(SCHOLARSHIP_CREATED_TOPIC, {
-      event: SCHOLARSHIP_CREATED_TOPIC,
-      scholarshipId: scholarship.id,
-      studentId: scholarship.studentId,
-      scholarshipType: scholarship.scholarshipType,
-      status: scholarship.status,
-      occurredAt: scholarship.createdAt.toISOString(),
+      event: payload.event,
+      scholarshipId: payload.scholarshipId,
+      studentId: payload.studentId,
+      scholarshipType: payload.scholarshipType,
+      status: payload.status,
+      occurredAt: payload.occurredAt,
     });
   }
 
-  async publishScholarshipStatusUpdated(scholarship: Scholarship): Promise<void> {
+  async publishScholarshipStatusUpdated(
+    payload: ScholarshipEventPayload,
+  ): Promise<void> {
     await this.publish(SCHOLARSHIP_STATUS_UPDATED_TOPIC, {
-      event: SCHOLARSHIP_STATUS_UPDATED_TOPIC,
-      scholarshipId: scholarship.id,
-      studentId: scholarship.studentId,
-      scholarshipType: scholarship.scholarshipType,
-      status: scholarship.status,
-      occurredAt: scholarship.updatedAt.toISOString(),
+      event: payload.event,
+      scholarshipId: payload.scholarshipId,
+      studentId: payload.studentId,
+      scholarshipType: payload.scholarshipType,
+      status: payload.status,
+      occurredAt: payload.occurredAt,
     });
   }
 
