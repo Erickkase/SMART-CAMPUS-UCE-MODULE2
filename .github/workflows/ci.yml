@@ -41,18 +41,6 @@ jobs:
       - name: Build student-service
         run: npm run build:student
 
-      - name: Build api-gateway
-        run: npx nest build api-gateway
-
-      - name: Build subject-service
-        run: npm run build:subject
-
-      - name: Build enrollment-service
-        run: npm run build:enrollment
-
-      - name: Build student-service
-        run: npm run build:student
-
       - name: Build notification-service
         run: npm run build:notification
 

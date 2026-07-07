@@ -102,6 +102,15 @@ This service publishes the following MQTT topics:
 | `scholarship.created` | A scholarship request is created |
 | `scholarship.status.updated` | A scholarship request status changes |
 
+## RabbitMQ Events
+
+This service also publishes RabbitMQ messages to the `welfare.events` topic exchange:
+
+| Routing key | Trigger |
+| --- | --- |
+| `scholarship.created` | A scholarship request is created |
+| `scholarship.status.updated` | A scholarship request status changes |
+
 ## Local Execution
 
 From the monorepo root:

@@ -17,6 +17,7 @@ import {
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
 import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
+import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
 
 @Injectable()
 export class ScholarshipService {
@@ -25,6 +26,7 @@ export class ScholarshipService {
     private readonly scholarshipRepository: ScholarshipRepository,
     private readonly scholarshipCacheService: ScholarshipCacheService,
     private readonly scholarshipMqttPublisher: ScholarshipMqttPublisherService,
+    private readonly scholarshipRabbitMqPublisher: ScholarshipRabbitMqPublisherService,
   ) {}
 
   async createScholarship(
@@ -45,6 +47,7 @@ export class ScholarshipService {
     const createdScholarship = await this.scholarshipRepository.create(scholarship);
     await this.scholarshipCacheService.invalidateScholarshipList();
     await this.scholarshipMqttPublisher.publishScholarshipCreated(createdScholarship);
+    await this.scholarshipRabbitMqPublisher.publishScholarshipCreated(createdScholarship);
     return createdScholarship;
   }
 
@@ -134,6 +137,9 @@ export class ScholarshipService {
 
     await this.scholarshipCacheService.invalidateScholarshipList();
     await this.scholarshipMqttPublisher.publishScholarshipStatusUpdated(
+      updatedScholarship,
+    );
+    await this.scholarshipRabbitMqPublisher.publishScholarshipStatusUpdated(
       updatedScholarship,
     );
 

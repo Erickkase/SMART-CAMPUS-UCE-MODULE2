@@ -26,6 +26,11 @@ export default () => ({
     brokerUrl: process.env.MQTT_BROKER_URL ?? 'mqtt://localhost:1883',
     clientId: process.env.MQTT_CLIENT_ID ?? 'scholarship-service',
   },
+  rabbitmq: {
+    enabled: (process.env.RABBITMQ_ENABLED ?? 'false') === 'true',
+    url: process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
+    exchange: process.env.RABBITMQ_EXCHANGE ?? 'welfare.events',
+  },
   redis: {
     enabled: (process.env.REDIS_ENABLED ?? 'false') === 'true',
     host: process.env.REDIS_HOST ?? 'localhost',

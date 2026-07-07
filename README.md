@@ -212,6 +212,15 @@ The root `docker-compose.yml` orchestrates the full local stack.
 | `scholarship.created` | `scholarship-service` | `psychological-care-service` | Signals that a scholarship request was created |
 | `scholarship.status.updated` | `scholarship-service` | `psychological-care-service` | Signals that a scholarship request changed status |
 
+### RabbitMQ routing keys
+
+RabbitMQ currently uses the `welfare.events` topic exchange with these routing keys:
+
+| Routing key | Publisher | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `scholarship.created` | `scholarship-service` | `psychological-care-service` | Queue-based scholarship creation event |
+| `scholarship.status.updated` | `scholarship-service` | `psychological-care-service` | Queue-based scholarship status update event |
+
 ### Included infrastructure
 
 | Service | Purpose |

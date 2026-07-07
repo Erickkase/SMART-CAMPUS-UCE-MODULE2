@@ -8,6 +8,7 @@ import {
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
 import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
+import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
 import { ScholarshipService } from './scholarship.service';
 
 describe('ScholarshipService', () => {
@@ -15,6 +16,7 @@ describe('ScholarshipService', () => {
   let repository: jest.Mocked<ScholarshipRepository>;
   let cacheService: jest.Mocked<ScholarshipCacheService>;
   let mqttPublisher: jest.Mocked<ScholarshipMqttPublisherService>;
+  let rabbitMqPublisher: jest.Mocked<ScholarshipRabbitMqPublisherService>;
 
   const scholarship = new Scholarship(
     '67e95da2-65f7-4de7-8dc0-622b7298236b',
@@ -42,6 +44,12 @@ describe('ScholarshipService', () => {
       onModuleDestroy: jest.fn(),
     } as unknown as jest.Mocked<ScholarshipMqttPublisherService>;
 
+    rabbitMqPublisher = {
+      publishScholarshipCreated: jest.fn(),
+      publishScholarshipStatusUpdated: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipRabbitMqPublisherService>;
+
     cacheService = {
       getScholarshipList: jest.fn(),
       setScholarshipList: jest.fn(),
@@ -63,6 +71,10 @@ describe('ScholarshipService', () => {
         {
           provide: ScholarshipMqttPublisherService,
           useValue: mqttPublisher,
+        },
+        {
+          provide: ScholarshipRabbitMqPublisherService,
+          useValue: rabbitMqPublisher,
         },
       ],
     }).compile();
@@ -86,6 +98,7 @@ describe('ScholarshipService', () => {
     expect(repository.create).toHaveBeenCalledTimes(1);
     expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
     expect(mqttPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
+    expect(rabbitMqPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
   });
 
   it('should return all scholarships', async () => {
@@ -137,6 +150,9 @@ describe('ScholarshipService', () => {
     );
     expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
     expect(mqttPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
+      approvedScholarship,
+    );
+    expect(rabbitMqPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
       approvedScholarship,
     );
   });

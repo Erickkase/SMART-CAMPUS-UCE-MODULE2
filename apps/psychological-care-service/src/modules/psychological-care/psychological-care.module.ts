@@ -19,6 +19,7 @@ import { PsychologicalFollowUpTypeOrmRepository } from './infrastructure/persist
 import { PsychologicalReferralTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/psychological-referral-typeorm.repository';
 import { PsychologicalRequestTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/psychological-request-typeorm.repository';
 import { ScholarshipEventsConsumerService } from './infrastructure/messaging/scholarship-events-consumer.service';
+import { ScholarshipRabbitMqConsumerService } from './infrastructure/messaging/scholarship-rabbitmq-consumer.service';
 import { PsychologicalCareController } from './presentation/controllers/psychological-care.controller';
 
 loadEnv({ path: 'apps/psychological-care-service/.env', quiet: true });
@@ -73,6 +74,7 @@ const psychologicalReferralRepositoryProvider = {
   providers: [
     PsychologicalCareService,
     ScholarshipEventsConsumerService,
+    ScholarshipRabbitMqConsumerService,
     psychologicalRequestRepositoryProvider,
     psychologicalAppointmentRepositoryProvider,
     psychologicalFollowUpRepositoryProvider,

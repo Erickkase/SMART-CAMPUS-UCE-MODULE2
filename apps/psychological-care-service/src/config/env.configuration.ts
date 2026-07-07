@@ -26,4 +26,9 @@ export default () => ({
     brokerUrl: process.env.MQTT_BROKER_URL ?? 'mqtt://localhost:1883',
     clientId: process.env.MQTT_CLIENT_ID ?? 'psychological-care-service',
   },
+  rabbitmq: {
+    enabled: (process.env.RABBITMQ_ENABLED ?? 'false') === 'true',
+    url: process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
+    exchange: process.env.RABBITMQ_EXCHANGE ?? 'welfare.events',
+  },
 });

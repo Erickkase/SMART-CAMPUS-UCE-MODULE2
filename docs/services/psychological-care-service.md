@@ -93,6 +93,15 @@ This service subscribes to the following MQTT topics:
 | `scholarship.created` | `scholarship-service` |
 | `scholarship.status.updated` | `scholarship-service` |
 
+## RabbitMQ Events
+
+This service subscribes to the `welfare.events` topic exchange with these routing keys:
+
+| Routing key | Source |
+| --- | --- |
+| `scholarship.created` | `scholarship-service` |
+| `scholarship.status.updated` | `scholarship-service` |
+
 ## Local Execution
 
 From the monorepo root:
