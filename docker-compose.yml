@@ -333,6 +333,38 @@ services:
       appointment-postgres:
         condition: service_healthy
 
+  student-request-postgres:
+    image: postgres:16
+    container_name: student-request-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: student_request_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5440:5432"
+    volumes:
+      - student_request_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d student_request_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  student-request-service:
+    build:
+      context: .
+      dockerfile: apps/student-request-service/Dockerfile
+    container_name: student-request-service
+    restart: unless-stopped
+    env_file:
+      - apps/student-request-service/.env.docker
+    ports:
+      - "3010:3010"
+    depends_on:
+      student-request-postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: .
@@ -351,6 +383,7 @@ services:
       - enrollment-service
       - student-service
       - appointment-service
+      - student-request-service
 
   welfare-frontend:
     build:
@@ -374,6 +407,7 @@ services:
       - psychological-care-service
       - student-service
       - appointment-service
+      - student-request-service
 
 volumes:
   mosquitto_data:
@@ -391,3 +425,4 @@ volumes:
   student_postgres_data:
   notification_postgres_data:
   appointment_postgres_data:
+  student_request_postgres_data:

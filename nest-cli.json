@@ -88,6 +88,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/appointment-service/tsconfig.app.json"
       }
+    },
+    "student-request-service": {
+      "type": "application",
+      "root": "apps/student-request-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/student-request-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/student-request-service/tsconfig.app.json"
+      }
     }
   }
 }
