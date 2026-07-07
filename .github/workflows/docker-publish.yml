@@ -34,13 +34,25 @@ jobs:
             dockerfile: apps/enrollment-service/Dockerfile
           - service: student-service
             dockerfile: apps/student-service/Dockerfile
+          - service: subject-service
+            dockerfile: apps/subject-service/Dockerfile
+          - service: enrollment-service
+            dockerfile: apps/enrollment-service/Dockerfile
+          - service: student-service
+            dockerfile: apps/student-service/Dockerfile
+          - service: notification-service
+            dockerfile: apps/notification-service/Dockerfile
+          - service: api-gateway
+            dockerfile: apps/api-gateway/Dockerfile
+          - service: appointment-service
+            dockerfile: apps/appointment-service/Dockerfile
           - service: welfare-frontend
             dockerfile: apps/welfare-frontend/Dockerfile
+            no_cache: true
             build_args: |
               NEXT_PUBLIC_SCHOLARSHIP_API_URL=http://localhost:3000
               NEXT_PUBLIC_SOCIOECONOMIC_API_URL=http://localhost:3001
               NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=http://localhost:3002
-              NEXT_PUBLIC_API_GATEWAY_URL=http://localhost:8080
 
     steps:
       - name: Checkout repository
@@ -62,8 +74,11 @@ jobs:
             type=ref,event=branch
             type=sha,prefix={{branch}}-
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ matrix.dockerfile }}
@@ -71,3 +86,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: ${{ matrix.build_args }}
+          provenance: false
+          no-cache: ${{ matrix.no_cache || false }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

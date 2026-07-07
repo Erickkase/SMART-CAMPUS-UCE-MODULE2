@@ -2,18 +2,25 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-ARG NEXT_PUBLIC_SCHOLARSHIP_API_URL
-ARG NEXT_PUBLIC_SOCIOECONOMIC_API_URL
-ARG NEXT_PUBLIC_PSYCHOLOGICAL_API_URL
-ARG NEXT_PUBLIC_API_GATEWAY_URL
+ARG NEXT_PUBLIC_SCHOLARSHIP_API_URL=/api/scholarships
+ARG NEXT_PUBLIC_SOCIOECONOMIC_API_URL=/api/socioeconomic
+ARG NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=/api/psychological
+ARG NEXT_PUBLIC_APPOINTMENT_API_URL=/api/appointments
+ARG NEXT_PUBLIC_API_GATEWAY_URL=/api/gateway
 
 ENV NEXT_PUBLIC_SCHOLARSHIP_API_URL=$NEXT_PUBLIC_SCHOLARSHIP_API_URL
 ENV NEXT_PUBLIC_SOCIOECONOMIC_API_URL=$NEXT_PUBLIC_SOCIOECONOMIC_API_URL
 ENV NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=$NEXT_PUBLIC_PSYCHOLOGICAL_API_URL
+ENV NEXT_PUBLIC_APPOINTMENT_API_URL=$NEXT_PUBLIC_APPOINTMENT_API_URL
 ENV NEXT_PUBLIC_API_GATEWAY_URL=$NEXT_PUBLIC_API_GATEWAY_URL
 
-COPY apps/welfare-frontend/package*.json ./
+# Shared dependency required by the file: resolution in package.json
+COPY libs/shared-welfare-api /libs/shared-welfare-api
+RUN cd /libs/shared-welfare-api && npm ci && npm run build
+
+COPY apps/welfare-frontend/package.json ./
 RUN npm install
+RUN mkdir -p node_modules/@smart-campus && ln -s /libs/shared-welfare-api node_modules/@smart-campus/shared-welfare-api
 
 COPY apps/welfare-frontend ./
 

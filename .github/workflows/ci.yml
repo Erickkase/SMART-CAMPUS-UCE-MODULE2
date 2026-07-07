@@ -44,11 +44,45 @@ jobs:
       - name: Build api-gateway
         run: npx nest build api-gateway
 
+      - name: Build subject-service
+        run: npm run build:subject
+
+      - name: Build enrollment-service
+        run: npm run build:enrollment
+
+      - name: Build student-service
+        run: npm run build:student
+
+      - name: Build notification-service
+        run: npm run build:notification
+
+      - name: Build api-gateway
+        run: npm run build:api-gateway
+
+      - name: Build appointment-service
+        run: npm run build:appointment
+
       - name: Run tests
         run: npm run test -- --passWithNoTests
+
+      - name: Build shared-welfare-api
+        working-directory: libs/shared-welfare-api
+        run: |
+          npm ci
+          npm run build
 
       - name: Build welfare-frontend
         working-directory: apps/welfare-frontend
         run: |
           npm ci
           npm run build
+
+      - name: Build welfare-mobile
+        working-directory: apps/welfare-mobile
+        run: |
+          npm ci
+          npm run typecheck
+          npm run typecheck:test
+          npm run lint
+          npm test
+          npx expo export --platform web

@@ -8,12 +8,28 @@ coverage/
 !.env.example
 
 *.log
+*.tsbuildinfo
 
 .vscode/
 .idea/
 
+# Expo / React Native
+.expo/
+.expo-shared/
+ios/
+android/
+*.apk
+*.aab
+*.ipa
+*.app
+web-build/
+# @end-expo
+
 terraform.tfstate
 terraform.tfstate.backup
+*.tfstate.*.backup
 .terraform/
+*.tfplan
 
 .pem
+logs/

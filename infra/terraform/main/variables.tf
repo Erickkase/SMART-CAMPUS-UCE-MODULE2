@@ -63,6 +63,30 @@ variable "root_volume_size" {
   default     = 20
 }
 
+variable "data_volume_size" {
+  description = "Tamaño en GB del volumen EBS para datos de bases de datos Docker"
+  type        = number
+  default     = 30
+}
+
+variable "asg_min_size" {
+  description = "Cantidad mínima de instancias en el Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
+variable "asg_max_size" {
+  description = "Cantidad máxima de instancias en el Auto Scaling Group"
+  type        = number
+  default     = 2
+}
+
+variable "asg_desired_capacity" {
+  description = "Cantidad deseada de instancias en el Auto Scaling Group"
+  type        = number
+  default     = 1
+}
+
 variable "app_bucket_name" {
   description = "Nombre del bucket S3 para la aplicacion (debe ser unico globalmente)"
   type        = string
