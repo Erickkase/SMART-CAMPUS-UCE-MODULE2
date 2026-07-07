@@ -73,6 +73,7 @@ smart-campus-uce-module2/
 | `mqtt-broker` | `localhost:1883` | MQTT broker for async event integration |
 | `rabbitmq` | `localhost:5672` | AMQP broker for queue-based messaging |
 | `rabbitmq-management` | `http://localhost:15672` | RabbitMQ management console |
+| `kafka` | `localhost:9094` | Kafka broker for event streaming |
 | `redis` | `localhost:6379` | Cache and shared transient data |
 
 ### Docker Compose Ports
@@ -96,6 +97,7 @@ smart-campus-uce-module2/
 | `mqtt-broker` | `1883` | `1883` |
 | `rabbitmq` | `5672` | `5672` |
 | `rabbitmq-management` | `15672` | `15672` |
+| `kafka` | `9094` | `9094` |
 | `redis` | `6379` | `6379` |
 
 Important note: `welfare-frontend` and `psychological-care-service` both use `3003` in standalone local execution, but not at the same time. In Docker Compose, the frontend is exposed on `3003` and the psychological service on `3002`.
@@ -233,6 +235,7 @@ RabbitMQ currently uses the `welfare.events` topic exchange with these routing k
 | `student-postgres` | Database for `student-service` |
 | `mqtt-broker` | MQTT broker for event-driven communication |
 | `rabbitmq` | AMQP broker for asynchronous queues and workers |
+| `kafka` | Event streaming broker for domain events and audit flows |
 | `redis` | In-memory cache and shared transient storage |
 
 ### Included applications
