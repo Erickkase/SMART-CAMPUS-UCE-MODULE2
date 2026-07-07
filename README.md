@@ -71,6 +71,8 @@ smart-campus-uce-module2/
 | `api-gateway` | `http://localhost:8080` | Gateway root for proxied backend routes |
 | `welfare-frontend` | `http://localhost:3003` | Next.js dev server |
 | `mqtt-broker` | `localhost:1883` | MQTT broker for async event integration |
+| `rabbitmq` | `localhost:5672` | AMQP broker for queue-based messaging |
+| `rabbitmq-management` | `http://localhost:15672` | RabbitMQ management console |
 | `redis` | `localhost:6379` | Cache and shared transient data |
 
 ### Docker Compose Ports
@@ -92,6 +94,8 @@ smart-campus-uce-module2/
 | `api-gateway` | `8080` | `8080` |
 | `welfare-frontend` | `3003` | `3002` |
 | `mqtt-broker` | `1883` | `1883` |
+| `rabbitmq` | `5672` | `5672` |
+| `rabbitmq-management` | `15672` | `15672` |
 | `redis` | `6379` | `6379` |
 
 Important note: `welfare-frontend` and `psychological-care-service` both use `3003` in standalone local execution, but not at the same time. In Docker Compose, the frontend is exposed on `3003` and the psychological service on `3002`.
@@ -219,6 +223,7 @@ The root `docker-compose.yml` orchestrates the full local stack.
 | `enrollment-postgres` | Database for `enrollment-service` |
 | `student-postgres` | Database for `student-service` |
 | `mqtt-broker` | MQTT broker for event-driven communication |
+| `rabbitmq` | AMQP broker for asynchronous queues and workers |
 | `redis` | In-memory cache and shared transient storage |
 
 ### Included applications
