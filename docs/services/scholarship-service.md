@@ -4,6 +4,14 @@
 
 `scholarship-service` is a NestJS microservice responsible for scholarship request management in SMART CAMPUS UCE Module 2.
 
+## CQRS Structure
+
+This service now follows a lightweight CQRS organization:
+
+- commands handle write operations such as create, update, status changes, and delete
+- queries handle read operations such as list and get by id
+- handlers orchestrate command and query execution from the controller layer
+
 ## Responsibilities
 
 - Create scholarship requests.

@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SCHOLARSHIP_REPOSITORY } from './domain/repositories/scholarship.repository';
+import { CreateScholarshipHandler } from './application/handlers/create-scholarship.handler';
+import { DeleteScholarshipHandler } from './application/handlers/delete-scholarship.handler';
+import { GetScholarshipByIdHandler } from './application/handlers/get-scholarship-by-id.handler';
+import { GetScholarshipsHandler } from './application/handlers/get-scholarships.handler';
 import { ScholarshipService } from './application/services/scholarship.service';
+import { UpdateScholarshipHandler } from './application/handlers/update-scholarship.handler';
+import { UpdateScholarshipStatusHandler } from './application/handlers/update-scholarship-status.handler';
 import { ScholarshipTypeOrmEntity } from './infrastructure/persistence/typeorm/entities/scholarship.typeorm-entity';
 import { ScholarshipInMemoryRepository } from './infrastructure/persistence/in-memory/repositories/scholarship-in-memory.repository';
 import { ScholarshipMqttPublisherService } from './infrastructure/messaging/scholarship-mqtt-publisher.service';
@@ -35,6 +41,12 @@ const scholarshipRepositoryProvider = {
     ScholarshipMqttPublisherService,
     ScholarshipKafkaProducerService,
     ScholarshipRabbitMqPublisherService,
+    CreateScholarshipHandler,
+    GetScholarshipsHandler,
+    GetScholarshipByIdHandler,
+    UpdateScholarshipHandler,
+    UpdateScholarshipStatusHandler,
+    DeleteScholarshipHandler,
     scholarshipRepositoryProvider,
   ],
   exports: [ScholarshipService],

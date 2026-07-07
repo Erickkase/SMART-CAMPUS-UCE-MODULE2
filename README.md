@@ -384,6 +384,14 @@ Detailed application documentation is available here:
 | `docs/services/api-gateway.md` | API Gateway release documentation |
 | `docs/services/welfare-frontend.md` | Frontend release documentation |
 
+## Current CQRS Adoption
+
+The first explicit CQRS implementation in the monorepo is currently applied in:
+
+| Service | Read side | Write side |
+| --- | --- | --- |
+| `scholarship-service` | query handlers | command handlers |
+
 ## Additional Release Files
 
 | File | Purpose |
