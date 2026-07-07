@@ -61,12 +61,16 @@ jobs:
 
       - name: Build welfare-frontend
         working-directory: apps/welfare-frontend
+        env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm ci
           npm run build
 
       - name: Build welfare-mobile
         working-directory: apps/welfare-mobile
+        env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm ci
           npm run typecheck

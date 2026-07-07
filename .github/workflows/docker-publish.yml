@@ -71,6 +71,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Prepare build args
+        id: prepare_build_args
+        run: |
+          ARGS="${{ matrix.build_args }}"
+          if [ "${{ matrix.service }}" = "welfare-frontend" ]; then
+            ARGS="${ARGS}
+          NPM_TOKEN=${{ secrets.GITHUB_TOKEN }}"
+          fi
+          {
+            echo "args<<EOF"
+            echo "$ARGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -79,7 +93,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: ${{ matrix.build_args }}
+          build-args: ${{ steps.prepare_build_args.outputs.args }}
           provenance: false
           no-cache: ${{ matrix.no_cache || false }}
           cache-from: type=gha
