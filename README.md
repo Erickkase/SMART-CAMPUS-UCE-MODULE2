@@ -74,6 +74,8 @@ smart-campus-uce-module2/
 | `rabbitmq` | `localhost:5672` | AMQP broker for queue-based messaging |
 | `rabbitmq-management` | `http://localhost:15672` | RabbitMQ management console |
 | `kafka` | `localhost:9094` | Kafka broker for event streaming |
+| `prometheus` | `http://localhost:9090` | Metrics and service scraping |
+| `grafana` | `http://localhost:3009` | Observability dashboards |
 | `redis` | `localhost:6379` | Cache and shared transient data |
 
 ### Docker Compose Ports
@@ -98,6 +100,8 @@ smart-campus-uce-module2/
 | `rabbitmq` | `5672` | `5672` |
 | `rabbitmq-management` | `15672` | `15672` |
 | `kafka` | `9094` | `9094` |
+| `prometheus` | `9090` | `9090` |
+| `grafana` | `3009` | `3000` |
 | `redis` | `6379` | `6379` |
 
 Important note: `welfare-frontend` and `psychological-care-service` both use `3003` in standalone local execution, but not at the same time. In Docker Compose, the frontend is exposed on `3003` and the psychological service on `3002`.
@@ -244,7 +248,15 @@ Kafka currently streams scholarship domain events through this topic:
 | `mqtt-broker` | MQTT broker for event-driven communication |
 | `rabbitmq` | AMQP broker for asynchronous queues and workers |
 | `kafka` | Event streaming broker for domain events and audit flows |
+| `prometheus` | Metrics collection and scraping |
+| `grafana` | Dashboard visualization for observability |
 | `redis` | In-memory cache and shared transient storage |
+
+### Current metrics exposure
+
+| Service | Metrics endpoint |
+| --- | --- |
+| `api-gateway` | `http://localhost:8080/metrics` |
 
 ### Included applications
 

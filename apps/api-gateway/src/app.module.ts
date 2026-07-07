@@ -6,6 +6,8 @@ import envConfiguration from './config/env.configuration';
 import { validateEnv } from './config/env.validation';
 import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
 import { HealthController } from './modules/health/health.controller';
+import { MetricsController } from './modules/metrics/metrics.controller';
+import { MetricsService } from './modules/metrics/metrics.service';
 import { ProxyController } from './modules/proxy/proxy.controller';
 import { ProxyService } from './modules/proxy/proxy.service';
 
@@ -27,8 +29,9 @@ const rateLimitLimit = Number(process.env.RATE_LIMIT_LIMIT ?? 30);
       },
     ]),
   ],
-  controllers: [HealthController, ProxyController],
+  controllers: [HealthController, MetricsController, ProxyController],
   providers: [
+    MetricsService,
     ProxyService,
     JwtAuthGuard,
     {
