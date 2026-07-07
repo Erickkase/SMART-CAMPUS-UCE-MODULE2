@@ -27,6 +27,7 @@ services:
     image: apache/kafka:3.9.0
     container_name: smart-campus-kafka
     restart: unless-stopped
+    user: "0:0"
     ports:
       - "9094:9094"
     environment:
