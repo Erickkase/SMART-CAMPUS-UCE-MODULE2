@@ -1,7 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { Notification } from '../../domain/entities/notification.entity';
+import { OutboxEvent } from '../../domain/entities/outbox-event.entity';
 import { NotificationStatus } from '../../domain/enums/notification-status.enum';
+import { OutboxEventStatus } from '../../domain/enums/outbox-event-status.enum';
 import {
   NOTIFICATION_REPOSITORY,
   NotificationRepository,
@@ -19,8 +21,9 @@ export class NotificationService {
 
   async createNotification(createNotificationDto: CreateNotificationDto): Promise<Notification> {
     const now = new Date();
+    const notificationId = randomUUID();
     const notification = new Notification(
-      randomUUID(),
+      notificationId,
       createNotificationDto.recipientId,
       createNotificationDto.recipientType,
       createNotificationDto.channel,
@@ -34,7 +37,28 @@ export class NotificationService {
       now,
     );
 
-    return this.notificationRepository.create(notification);
+    const outboxEvent = new OutboxEvent(
+      randomUUID(),
+      'Notification',
+      notificationId,
+      'NotificationCreated',
+      {
+        notificationId,
+        recipientId: notification.recipientId,
+        recipientType: notification.recipientType,
+        channel: notification.channel,
+        subject: notification.subject,
+        status: notification.status,
+        createdAt: notification.createdAt.toISOString(),
+      },
+      OutboxEventStatus.PENDING,
+      0,
+      null,
+      now,
+      null,
+    );
+
+    return this.notificationRepository.createWithOutbox(notification, outboxEvent);
   }
 
   async getNotifications(): Promise<Notification[]> {

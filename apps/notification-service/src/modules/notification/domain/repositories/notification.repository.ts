@@ -1,4 +1,5 @@
 import { Notification } from '../entities/notification.entity';
+import { OutboxEvent } from '../entities/outbox-event.entity';
 import { NotificationChannel } from '../enums/notification-channel.enum';
 import { NotificationStatus } from '../enums/notification-status.enum';
 import { RecipientType } from '../enums/recipient-type.enum';
@@ -18,6 +19,10 @@ export interface UpdateNotificationData {
 
 export interface NotificationRepository {
   create(notification: Notification): Promise<Notification>;
+  createWithOutbox(
+    notification: Notification,
+    outboxEvent: OutboxEvent,
+  ): Promise<Notification>;
   findAll(): Promise<Notification[]>;
   findById(id: string): Promise<Notification | null>;
   findByRecipientId(recipientId: string): Promise<Notification[]>;

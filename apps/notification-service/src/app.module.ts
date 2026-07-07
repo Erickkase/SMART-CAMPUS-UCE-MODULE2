@@ -5,6 +5,7 @@ import envConfiguration from './config/env.configuration';
 import { validateEnv } from './config/env.validation';
 import { HealthModule } from './modules/health/health.module';
 import { NotificationTypeOrmEntity } from './modules/notification/infrastructure/persistence/typeorm/entities/notification.typeorm-entity';
+import { OutboxEventTypeOrmEntity } from './modules/notification/infrastructure/persistence/typeorm/entities/outbox-event.typeorm-entity';
 import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
@@ -30,7 +31,7 @@ import { NotificationModule } from './modules/notification/notification.module';
           synchronize: configService.get<boolean>('database.synchronize'),
           logging: configService.get<boolean>('database.logging'),
           autoLoadEntities: true,
-          entities: [NotificationTypeOrmEntity],
+          entities: [NotificationTypeOrmEntity, OutboxEventTypeOrmEntity],
           manualInitialization: !dbEnabled,
         };
       },
