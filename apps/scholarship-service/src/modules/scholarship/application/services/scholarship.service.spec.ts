@@ -6,12 +6,14 @@ import {
   SCHOLARSHIP_REPOSITORY,
   ScholarshipRepository,
 } from '../../domain/repositories/scholarship.repository';
+import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
 import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
 import { ScholarshipService } from './scholarship.service';
 
 describe('ScholarshipService', () => {
   let service: ScholarshipService;
   let repository: jest.Mocked<ScholarshipRepository>;
+  let cacheService: jest.Mocked<ScholarshipCacheService>;
   let mqttPublisher: jest.Mocked<ScholarshipMqttPublisherService>;
 
   const scholarship = new Scholarship(
@@ -40,12 +42,23 @@ describe('ScholarshipService', () => {
       onModuleDestroy: jest.fn(),
     } as unknown as jest.Mocked<ScholarshipMqttPublisherService>;
 
+    cacheService = {
+      getScholarshipList: jest.fn(),
+      setScholarshipList: jest.fn(),
+      invalidateScholarshipList: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipCacheService>;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ScholarshipService,
         {
           provide: SCHOLARSHIP_REPOSITORY,
           useValue: repository,
+        },
+        {
+          provide: ScholarshipCacheService,
+          useValue: cacheService,
         },
         {
           provide: ScholarshipMqttPublisherService,
@@ -71,14 +84,24 @@ describe('ScholarshipService', () => {
 
     expect(result.status).toBe(ScholarshipStatus.PENDING);
     expect(repository.create).toHaveBeenCalledTimes(1);
+    expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
     expect(mqttPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
   });
 
   it('should return all scholarships', async () => {
+    cacheService.getScholarshipList.mockResolvedValue(null);
     repository.findAll.mockResolvedValue([scholarship]);
 
     await expect(service.getScholarships()).resolves.toEqual([scholarship]);
     expect(repository.findAll).toHaveBeenCalledTimes(1);
+    expect(cacheService.setScholarshipList).toHaveBeenCalledWith([scholarship]);
+  });
+
+  it('should return scholarships from cache when available', async () => {
+    cacheService.getScholarshipList.mockResolvedValue([scholarship]);
+
+    await expect(service.getScholarships()).resolves.toEqual([scholarship]);
+    expect(repository.findAll).not.toHaveBeenCalled();
   });
 
   it('should throw NotFoundException when scholarship does not exist', async () => {
@@ -112,6 +135,7 @@ describe('ScholarshipService', () => {
       scholarship.id,
       ScholarshipStatus.APPROVED,
     );
+    expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
     expect(mqttPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
       approvedScholarship,
     );

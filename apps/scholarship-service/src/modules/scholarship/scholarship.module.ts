@@ -5,6 +5,7 @@ import { ScholarshipService } from './application/services/scholarship.service';
 import { ScholarshipTypeOrmEntity } from './infrastructure/persistence/typeorm/entities/scholarship.typeorm-entity';
 import { ScholarshipInMemoryRepository } from './infrastructure/persistence/in-memory/repositories/scholarship-in-memory.repository';
 import { ScholarshipMqttPublisherService } from './infrastructure/messaging/scholarship-mqtt-publisher.service';
+import { ScholarshipCacheService } from './infrastructure/cache/scholarship-cache.service';
 import { ScholarshipTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/scholarship-typeorm.repository';
 import { ScholarshipController } from './presentation/controllers/scholarship.controller';
 
@@ -28,6 +29,7 @@ const scholarshipRepositoryProvider = {
   controllers: [ScholarshipController],
   providers: [
     ScholarshipService,
+    ScholarshipCacheService,
     ScholarshipMqttPublisherService,
     scholarshipRepositoryProvider,
   ],

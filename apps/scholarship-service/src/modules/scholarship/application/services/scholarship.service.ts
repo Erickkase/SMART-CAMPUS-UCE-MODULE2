@@ -15,6 +15,7 @@ import {
   UpdateScholarshipData,
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
+import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
 import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class ScholarshipService {
   constructor(
     @Inject(SCHOLARSHIP_REPOSITORY)
     private readonly scholarshipRepository: ScholarshipRepository,
+    private readonly scholarshipCacheService: ScholarshipCacheService,
     private readonly scholarshipMqttPublisher: ScholarshipMqttPublisherService,
   ) {}
 
@@ -41,12 +43,21 @@ export class ScholarshipService {
     );
 
     const createdScholarship = await this.scholarshipRepository.create(scholarship);
+    await this.scholarshipCacheService.invalidateScholarshipList();
     await this.scholarshipMqttPublisher.publishScholarshipCreated(createdScholarship);
     return createdScholarship;
   }
 
   async getScholarships(): Promise<Scholarship[]> {
-    return this.scholarshipRepository.findAll();
+    const cachedScholarships = await this.scholarshipCacheService.getScholarshipList();
+
+    if (cachedScholarships) {
+      return cachedScholarships;
+    }
+
+    const scholarships = await this.scholarshipRepository.findAll();
+    await this.scholarshipCacheService.setScholarshipList(scholarships);
+    return scholarships;
   }
 
   async getScholarshipById(id: string): Promise<Scholarship> {
@@ -79,6 +90,8 @@ export class ScholarshipService {
     if (!updatedScholarship) {
       throw new NotFoundException(`Scholarship with id ${id} was not found`);
     }
+
+    await this.scholarshipCacheService.invalidateScholarshipList();
 
     return updatedScholarship;
   }
@@ -119,6 +132,7 @@ export class ScholarshipService {
       throw new NotFoundException(`Scholarship with id ${id} was not found`);
     }
 
+    await this.scholarshipCacheService.invalidateScholarshipList();
     await this.scholarshipMqttPublisher.publishScholarshipStatusUpdated(
       updatedScholarship,
     );
@@ -133,5 +147,7 @@ export class ScholarshipService {
     if (!deleted) {
       throw new NotFoundException(`Scholarship with id ${id} was not found`);
     }
+
+    await this.scholarshipCacheService.invalidateScholarshipList();
   }
 }

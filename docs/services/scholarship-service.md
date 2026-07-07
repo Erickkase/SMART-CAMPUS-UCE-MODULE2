@@ -78,6 +78,21 @@ Source files:
 - Docker Compose uses PostgreSQL with `DB_ENABLED=true`.
 - The Compose database service name is `postgres`.
 
+## Redis Cache
+
+This service uses Redis to cache scholarship list queries.
+
+| Cache key | Purpose |
+| --- | --- |
+| `scholarships:list` | Caches the full scholarship list |
+
+The cache is invalidated when a scholarship is:
+
+- created
+- updated
+- approved or rejected
+- deleted
+
 ## MQTT Events
 
 This service publishes the following MQTT topics:

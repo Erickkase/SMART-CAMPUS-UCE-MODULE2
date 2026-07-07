@@ -243,6 +243,14 @@ The `api-gateway` includes two runtime protection mechanisms:
 | Rate limiting | Limits repeated requests inside a fixed time window |
 | Circuit breaker | Stops forwarding calls temporarily after repeated downstream failures |
 
+### Redis cache usage
+
+Current Redis usage introduced in this iteration:
+
+| Service | Cached resource | Invalidation strategy |
+| --- | --- | --- |
+| `scholarship-service` | Scholarship list queries | Cleared on create, update, status change, and delete |
+
 ### Start the full stack
 
 ```bash

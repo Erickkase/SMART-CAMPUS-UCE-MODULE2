@@ -26,4 +26,9 @@ export default () => ({
     brokerUrl: process.env.MQTT_BROKER_URL ?? 'mqtt://localhost:1883',
     clientId: process.env.MQTT_CLIENT_ID ?? 'scholarship-service',
   },
+  redis: {
+    enabled: (process.env.REDIS_ENABLED ?? 'false') === 'true',
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number(process.env.REDIS_PORT ?? 6379),
+  },
 });
