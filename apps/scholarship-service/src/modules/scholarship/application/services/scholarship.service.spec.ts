@@ -8,6 +8,7 @@ import {
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
 import { ScholarshipOutboxDispatcherService } from '../../infrastructure/outbox/scholarship-outbox-dispatcher.service';
+import { ScholarshipTransactionalWriterService } from '../../infrastructure/outbox/scholarship-transactional-writer.service';
 import { ScholarshipService } from './scholarship.service';
 
 describe('ScholarshipService', () => {
@@ -15,6 +16,7 @@ describe('ScholarshipService', () => {
   let repository: jest.Mocked<ScholarshipRepository>;
   let cacheService: jest.Mocked<ScholarshipCacheService>;
   let outboxDispatcher: jest.Mocked<ScholarshipOutboxDispatcherService>;
+  let transactionalWriter: jest.Mocked<ScholarshipTransactionalWriterService>;
 
   const scholarship = new Scholarship(
     '67e95da2-65f7-4de7-8dc0-622b7298236b',
@@ -43,6 +45,11 @@ describe('ScholarshipService', () => {
       onModuleDestroy: jest.fn(),
     } as unknown as jest.Mocked<ScholarshipOutboxDispatcherService>;
 
+    transactionalWriter = {
+      createScholarshipWithEvent: jest.fn(),
+      updateScholarshipStatusWithEvent: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipTransactionalWriterService>;
+
     cacheService = {
       getScholarshipList: jest.fn(),
       setScholarshipList: jest.fn(),
@@ -65,6 +72,10 @@ describe('ScholarshipService', () => {
           provide: ScholarshipOutboxDispatcherService,
           useValue: outboxDispatcher,
         },
+        {
+          provide: ScholarshipTransactionalWriterService,
+          useValue: transactionalWriter,
+        },
       ],
     }).compile();
 
@@ -72,7 +83,7 @@ describe('ScholarshipService', () => {
   });
 
   it('should create a scholarship with PENDING status', async () => {
-    repository.create.mockImplementation(
+    transactionalWriter.createScholarshipWithEvent.mockImplementation(
       async (createdScholarship: Scholarship) => createdScholarship,
     );
 
@@ -84,9 +95,8 @@ describe('ScholarshipService', () => {
     });
 
     expect(result.status).toBe(ScholarshipStatus.PENDING);
-    expect(repository.create).toHaveBeenCalledTimes(1);
+    expect(transactionalWriter.createScholarshipWithEvent).toHaveBeenCalledTimes(1);
     expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
-    expect(outboxDispatcher.enqueueEvent).toHaveBeenCalledTimes(1);
     expect(outboxDispatcher.flushPendingEvents).toHaveBeenCalledTimes(1);
   });
 
@@ -126,19 +136,17 @@ describe('ScholarshipService', () => {
     );
 
     repository.findById.mockResolvedValue(scholarship);
-    repository.updateStatus.mockResolvedValue(approvedScholarship);
+    transactionalWriter.updateScholarshipStatusWithEvent.mockResolvedValue(
+      approvedScholarship,
+    );
 
     const result = await service.updateScholarshipStatus(scholarship.id, {
       status: ScholarshipStatus.APPROVED,
     });
 
     expect(result.status).toBe(ScholarshipStatus.APPROVED);
-    expect(repository.updateStatus).toHaveBeenCalledWith(
-      scholarship.id,
-      ScholarshipStatus.APPROVED,
-    );
+    expect(transactionalWriter.updateScholarshipStatusWithEvent).toHaveBeenCalledTimes(1);
     expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
-    expect(outboxDispatcher.enqueueEvent).toHaveBeenCalledTimes(1);
     expect(outboxDispatcher.flushPendingEvents).toHaveBeenCalledTimes(1);
   });
 

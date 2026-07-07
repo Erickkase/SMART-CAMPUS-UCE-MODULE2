@@ -20,6 +20,7 @@ import { ScholarshipOutboxTypeOrmEntity } from './infrastructure/persistence/typ
 import { ScholarshipOutboxTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/scholarship-outbox-typeorm.repository';
 import { ScholarshipTypeOrmRepository } from './infrastructure/persistence/typeorm/repositories/scholarship-typeorm.repository';
 import { ScholarshipOutboxDispatcherService } from './infrastructure/outbox/scholarship-outbox-dispatcher.service';
+import { ScholarshipTransactionalWriterService } from './infrastructure/outbox/scholarship-transactional-writer.service';
 import { ScholarshipController } from './presentation/controllers/scholarship.controller';
 
 const isDbEnabled =
@@ -59,6 +60,7 @@ const scholarshipOutboxRepositoryProvider = {
     ScholarshipKafkaProducerService,
     ScholarshipRabbitMqPublisherService,
     ScholarshipOutboxDispatcherService,
+    ScholarshipTransactionalWriterService,
     CreateScholarshipHandler,
     GetScholarshipsHandler,
     GetScholarshipByIdHandler,
