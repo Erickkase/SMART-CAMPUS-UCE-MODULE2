@@ -257,6 +257,7 @@ Kafka currently streams scholarship domain events through this topic:
 | Service | Metrics endpoint |
 | --- | --- |
 | `api-gateway` | `http://localhost:8080/metrics` |
+| `scholarship-service` | `http://localhost:3000/metrics` |
 
 ### Included applications
 
