@@ -31,6 +31,15 @@ export default () => ({
     url: process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
     exchange: process.env.RABBITMQ_EXCHANGE ?? 'welfare.events',
   },
+  kafka: {
+    enabled: (process.env.KAFKA_ENABLED ?? 'false') === 'true',
+    brokers: (process.env.KAFKA_BROKERS ?? 'localhost:9094').split(','),
+    clientId: process.env.KAFKA_CLIENT_ID ?? 'scholarship-service',
+    topics: {
+      scholarshipEvents:
+        process.env.KAFKA_TOPIC_SCHOLARSHIP_EVENTS ?? 'scholarship.events',
+    },
+  },
   redis: {
     enabled: (process.env.REDIS_ENABLED ?? 'false') === 'true',
     host: process.env.REDIS_HOST ?? 'localhost',

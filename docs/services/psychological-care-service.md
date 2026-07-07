@@ -102,6 +102,10 @@ This service subscribes to the `welfare.events` topic exchange with these routin
 | `scholarship.created` | `scholarship-service` |
 | `scholarship.status.updated` | `scholarship-service` |
 
+## Kafka Events
+
+This service also consumes scholarship lifecycle messages from the `scholarship.events` topic.
+
 ## Local Execution
 
 From the monorepo root:

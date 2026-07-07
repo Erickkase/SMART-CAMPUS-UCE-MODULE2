@@ -16,6 +16,7 @@ import {
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
+import { ScholarshipKafkaProducerService } from '../../infrastructure/messaging/scholarship-kafka-producer.service';
 import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
 import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
 
@@ -26,6 +27,7 @@ export class ScholarshipService {
     private readonly scholarshipRepository: ScholarshipRepository,
     private readonly scholarshipCacheService: ScholarshipCacheService,
     private readonly scholarshipMqttPublisher: ScholarshipMqttPublisherService,
+    private readonly scholarshipKafkaProducer: ScholarshipKafkaProducerService,
     private readonly scholarshipRabbitMqPublisher: ScholarshipRabbitMqPublisherService,
   ) {}
 
@@ -47,6 +49,7 @@ export class ScholarshipService {
     const createdScholarship = await this.scholarshipRepository.create(scholarship);
     await this.scholarshipCacheService.invalidateScholarshipList();
     await this.scholarshipMqttPublisher.publishScholarshipCreated(createdScholarship);
+    await this.scholarshipKafkaProducer.publishScholarshipCreated(createdScholarship);
     await this.scholarshipRabbitMqPublisher.publishScholarshipCreated(createdScholarship);
     return createdScholarship;
   }
@@ -137,6 +140,9 @@ export class ScholarshipService {
 
     await this.scholarshipCacheService.invalidateScholarshipList();
     await this.scholarshipMqttPublisher.publishScholarshipStatusUpdated(
+      updatedScholarship,
+    );
+    await this.scholarshipKafkaProducer.publishScholarshipStatusUpdated(
       updatedScholarship,
     );
     await this.scholarshipRabbitMqPublisher.publishScholarshipStatusUpdated(

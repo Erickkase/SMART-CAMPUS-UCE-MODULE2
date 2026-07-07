@@ -31,4 +31,13 @@ export default () => ({
     url: process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
     exchange: process.env.RABBITMQ_EXCHANGE ?? 'welfare.events',
   },
+  kafka: {
+    enabled: (process.env.KAFKA_ENABLED ?? 'false') === 'true',
+    brokers: (process.env.KAFKA_BROKERS ?? 'localhost:9094').split(','),
+    clientId: process.env.KAFKA_CLIENT_ID ?? 'psychological-care-service',
+    topics: {
+      scholarshipEvents:
+        process.env.KAFKA_TOPIC_SCHOLARSHIP_EVENTS ?? 'scholarship.events',
+    },
+  },
 });

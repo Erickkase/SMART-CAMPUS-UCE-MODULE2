@@ -223,6 +223,14 @@ RabbitMQ currently uses the `welfare.events` topic exchange with these routing k
 | `scholarship.created` | `scholarship-service` | `psychological-care-service` | Queue-based scholarship creation event |
 | `scholarship.status.updated` | `scholarship-service` | `psychological-care-service` | Queue-based scholarship status update event |
 
+### Kafka topic
+
+Kafka currently streams scholarship domain events through this topic:
+
+| Topic | Publisher | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `scholarship.events` | `scholarship-service` | `psychological-care-service` | Event streaming for scholarship lifecycle changes |
+
 ### Included infrastructure
 
 | Service | Purpose |

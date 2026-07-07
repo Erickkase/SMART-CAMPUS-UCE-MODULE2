@@ -111,6 +111,10 @@ This service also publishes RabbitMQ messages to the `welfare.events` topic exch
 | `scholarship.created` | A scholarship request is created |
 | `scholarship.status.updated` | A scholarship request status changes |
 
+## Kafka Events
+
+This service also publishes Kafka messages to the `scholarship.events` topic.
+
 ## Local Execution
 
 From the monorepo root:
