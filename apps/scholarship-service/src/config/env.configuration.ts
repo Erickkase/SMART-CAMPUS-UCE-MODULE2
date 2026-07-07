@@ -21,4 +21,28 @@ export default () => ({
     synchronize: (process.env.DB_SYNCHRONIZE ?? 'false') === 'true',
     logging: (process.env.DB_LOGGING ?? 'false') === 'true',
   },
+  mqtt: {
+    enabled: (process.env.MQTT_ENABLED ?? 'false') === 'true',
+    brokerUrl: process.env.MQTT_BROKER_URL ?? 'mqtt://localhost:1883',
+    clientId: process.env.MQTT_CLIENT_ID ?? 'scholarship-service',
+  },
+  rabbitmq: {
+    enabled: (process.env.RABBITMQ_ENABLED ?? 'false') === 'true',
+    url: process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672',
+    exchange: process.env.RABBITMQ_EXCHANGE ?? 'welfare.events',
+  },
+  kafka: {
+    enabled: (process.env.KAFKA_ENABLED ?? 'false') === 'true',
+    brokers: (process.env.KAFKA_BROKERS ?? 'localhost:9094').split(','),
+    clientId: process.env.KAFKA_CLIENT_ID ?? 'scholarship-service',
+    topics: {
+      scholarshipEvents:
+        process.env.KAFKA_TOPIC_SCHOLARSHIP_EVENTS ?? 'scholarship.events',
+    },
+  },
+  redis: {
+    enabled: (process.env.REDIS_ENABLED ?? 'false') === 'true',
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number(process.env.REDIS_PORT ?? 6379),
+  },
 });

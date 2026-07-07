@@ -2,6 +2,15 @@ export default () => ({
   port: Number(process.env.PORT ?? 8080),
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
   authEnabled: (process.env.AUTH_ENABLED ?? 'false') === 'true',
+  rateLimit: {
+    ttl: Number(process.env.RATE_LIMIT_TTL ?? 60000),
+    limit: Number(process.env.RATE_LIMIT_LIMIT ?? 30),
+  },
+  circuitBreaker: {
+    timeoutMs: Number(process.env.CIRCUIT_BREAKER_TIMEOUT_MS ?? 5000),
+    failureThreshold: Number(process.env.CIRCUIT_BREAKER_FAILURE_THRESHOLD ?? 3),
+    resetTimeoutMs: Number(process.env.CIRCUIT_BREAKER_RESET_TIMEOUT_MS ?? 15000),
+  },
   jwt: {
     secret: process.env.JWT_SECRET ?? 'development-secret',
   },

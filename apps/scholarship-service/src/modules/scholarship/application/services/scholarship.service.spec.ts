@@ -6,11 +6,19 @@ import {
   SCHOLARSHIP_REPOSITORY,
   ScholarshipRepository,
 } from '../../domain/repositories/scholarship.repository';
+import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
+import { ScholarshipKafkaProducerService } from '../../infrastructure/messaging/scholarship-kafka-producer.service';
+import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
+import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
 import { ScholarshipService } from './scholarship.service';
 
 describe('ScholarshipService', () => {
   let service: ScholarshipService;
   let repository: jest.Mocked<ScholarshipRepository>;
+  let cacheService: jest.Mocked<ScholarshipCacheService>;
+  let mqttPublisher: jest.Mocked<ScholarshipMqttPublisherService>;
+  let kafkaProducer: jest.Mocked<ScholarshipKafkaProducerService>;
+  let rabbitMqPublisher: jest.Mocked<ScholarshipRabbitMqPublisherService>;
 
   const scholarship = new Scholarship(
     '67e95da2-65f7-4de7-8dc0-622b7298236b',
@@ -32,12 +40,53 @@ describe('ScholarshipService', () => {
       delete: jest.fn(),
     };
 
+    mqttPublisher = {
+      publishScholarshipCreated: jest.fn(),
+      publishScholarshipStatusUpdated: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipMqttPublisherService>;
+
+    kafkaProducer = {
+      publishScholarshipCreated: jest.fn(),
+      publishScholarshipStatusUpdated: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipKafkaProducerService>;
+
+    rabbitMqPublisher = {
+      publishScholarshipCreated: jest.fn(),
+      publishScholarshipStatusUpdated: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipRabbitMqPublisherService>;
+
+    cacheService = {
+      getScholarshipList: jest.fn(),
+      setScholarshipList: jest.fn(),
+      invalidateScholarshipList: jest.fn(),
+      onModuleDestroy: jest.fn(),
+    } as unknown as jest.Mocked<ScholarshipCacheService>;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ScholarshipService,
         {
           provide: SCHOLARSHIP_REPOSITORY,
           useValue: repository,
+        },
+        {
+          provide: ScholarshipCacheService,
+          useValue: cacheService,
+        },
+        {
+          provide: ScholarshipMqttPublisherService,
+          useValue: mqttPublisher,
+        },
+        {
+          provide: ScholarshipKafkaProducerService,
+          useValue: kafkaProducer,
+        },
+        {
+          provide: ScholarshipRabbitMqPublisherService,
+          useValue: rabbitMqPublisher,
         },
       ],
     }).compile();
@@ -59,13 +108,26 @@ describe('ScholarshipService', () => {
 
     expect(result.status).toBe(ScholarshipStatus.PENDING);
     expect(repository.create).toHaveBeenCalledTimes(1);
+    expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
+    expect(mqttPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
+    expect(kafkaProducer.publishScholarshipCreated).toHaveBeenCalledTimes(1);
+    expect(rabbitMqPublisher.publishScholarshipCreated).toHaveBeenCalledTimes(1);
   });
 
   it('should return all scholarships', async () => {
+    cacheService.getScholarshipList.mockResolvedValue(null);
     repository.findAll.mockResolvedValue([scholarship]);
 
     await expect(service.getScholarships()).resolves.toEqual([scholarship]);
     expect(repository.findAll).toHaveBeenCalledTimes(1);
+    expect(cacheService.setScholarshipList).toHaveBeenCalledWith([scholarship]);
+  });
+
+  it('should return scholarships from cache when available', async () => {
+    cacheService.getScholarshipList.mockResolvedValue([scholarship]);
+
+    await expect(service.getScholarships()).resolves.toEqual([scholarship]);
+    expect(repository.findAll).not.toHaveBeenCalled();
   });
 
   it('should throw NotFoundException when scholarship does not exist', async () => {
@@ -98,6 +160,16 @@ describe('ScholarshipService', () => {
     expect(repository.updateStatus).toHaveBeenCalledWith(
       scholarship.id,
       ScholarshipStatus.APPROVED,
+    );
+    expect(cacheService.invalidateScholarshipList).toHaveBeenCalledTimes(1);
+    expect(mqttPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
+      approvedScholarship,
+    );
+    expect(kafkaProducer.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
+      approvedScholarship,
+    );
+    expect(rabbitMqPublisher.publishScholarshipStatusUpdated).toHaveBeenCalledWith(
+      approvedScholarship,
     );
   });
 
