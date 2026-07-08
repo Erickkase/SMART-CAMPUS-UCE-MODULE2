@@ -97,6 +97,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/student-request-service/tsconfig.app.json"
       }
+    },
+    "vulnerability-followup-service": {
+      "type": "application",
+      "root": "apps/vulnerability-followup-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/vulnerability-followup-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/vulnerability-followup-service/tsconfig.app.json"
+      }
     }
   }
 }

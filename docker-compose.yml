@@ -366,6 +366,38 @@ services:
       student-request-postgres:
         condition: service_healthy
 
+  vulnerability-followup-postgres:
+    image: postgres:16
+    container_name: vulnerability-followup-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vulnerability_followup_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5441:5432"
+    volumes:
+      - vulnerability_followup_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vulnerability_followup_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vulnerability-followup-service:
+    build:
+      context: .
+      dockerfile: apps/vulnerability-followup-service/Dockerfile
+    container_name: vulnerability-followup-service
+    restart: unless-stopped
+    env_file:
+      - apps/vulnerability-followup-service/.env.docker
+    ports:
+      - "3011:3011"
+    depends_on:
+      vulnerability-followup-postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: .
@@ -385,6 +417,7 @@ services:
       - student-service
       - appointment-service
       - student-request-service
+      - vulnerability-followup-service
 
   welfare-frontend:
     build:
@@ -409,6 +442,7 @@ services:
       - student-service
       - appointment-service
       - student-request-service
+      - vulnerability-followup-service
 
 volumes:
   mosquitto_data:
@@ -427,3 +461,4 @@ volumes:
   notification_postgres_data:
   appointment_postgres_data:
   student_request_postgres_data:
+  vulnerability_followup_postgres_data:
