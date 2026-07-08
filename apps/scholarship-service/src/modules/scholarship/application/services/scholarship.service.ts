@@ -9,6 +9,8 @@ import { CreateScholarshipDto } from '../dtos/create-scholarship.dto';
 import { UpdateScholarshipDto } from '../dtos/update-scholarship.dto';
 import { UpdateScholarshipStatusDto } from '../dtos/update-scholarship-status.dto';
 import { Scholarship } from '../../domain/entities/scholarship.entity';
+import { ScholarshipOutboxEvent } from '../../domain/entities/scholarship-outbox-event.entity';
+import { ScholarshipOutboxStatus } from '../../domain/enums/scholarship-outbox-status.enum';
 import {
   SCHOLARSHIP_REPOSITORY,
   ScholarshipRepository,
@@ -16,9 +18,17 @@ import {
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
 import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
-import { ScholarshipKafkaProducerService } from '../../infrastructure/messaging/scholarship-kafka-producer.service';
-import { ScholarshipMqttPublisherService } from '../../infrastructure/messaging/scholarship-mqtt-publisher.service';
-import { ScholarshipRabbitMqPublisherService } from '../../infrastructure/messaging/scholarship-rabbitmq-publisher.service';
+import { ScholarshipOutboxDispatcherService } from '../../infrastructure/outbox/scholarship-outbox-dispatcher.service';
+import { ScholarshipTransactionalWriterService } from '../../infrastructure/outbox/scholarship-transactional-writer.service';
+
+const createScholarshipEventPayload = (scholarship: Scholarship, event: string) => ({
+  event,
+  scholarshipId: scholarship.id,
+  studentId: scholarship.studentId,
+  scholarshipType: scholarship.scholarshipType,
+  status: scholarship.status,
+  occurredAt: scholarship.updatedAt.toISOString(),
+});
 
 @Injectable()
 export class ScholarshipService {
@@ -26,9 +36,8 @@ export class ScholarshipService {
     @Inject(SCHOLARSHIP_REPOSITORY)
     private readonly scholarshipRepository: ScholarshipRepository,
     private readonly scholarshipCacheService: ScholarshipCacheService,
-    private readonly scholarshipMqttPublisher: ScholarshipMqttPublisherService,
-    private readonly scholarshipKafkaProducer: ScholarshipKafkaProducerService,
-    private readonly scholarshipRabbitMqPublisher: ScholarshipRabbitMqPublisherService,
+    private readonly scholarshipOutboxDispatcher: ScholarshipOutboxDispatcherService,
+    private readonly scholarshipTransactionalWriter: ScholarshipTransactionalWriterService,
   ) {}
 
   async createScholarship(
@@ -46,11 +55,13 @@ export class ScholarshipService {
       now,
     );
 
-    const createdScholarship = await this.scholarshipRepository.create(scholarship);
+    const createdScholarship =
+      await this.scholarshipTransactionalWriter.createScholarshipWithEvent(
+        scholarship,
+        this.createOutboxEvent(scholarship, 'scholarship.created'),
+      );
     await this.scholarshipCacheService.invalidateScholarshipList();
-    await this.scholarshipMqttPublisher.publishScholarshipCreated(createdScholarship);
-    await this.scholarshipKafkaProducer.publishScholarshipCreated(createdScholarship);
-    await this.scholarshipRabbitMqPublisher.publishScholarshipCreated(createdScholarship);
+    await this.scholarshipOutboxDispatcher.flushPendingEvents();
     return createdScholarship;
   }
 
@@ -129,25 +140,26 @@ export class ScholarshipService {
       );
     }
 
-    const updatedScholarship = await this.scholarshipRepository.updateStatus(
-      id,
-      status,
-    );
-
-    if (!updatedScholarship) {
-      throw new NotFoundException(`Scholarship with id ${id} was not found`);
-    }
+    const updatedScholarship =
+      await this.scholarshipTransactionalWriter.updateScholarshipStatusWithEvent(
+        id,
+        status,
+        this.createOutboxEvent(
+          new Scholarship(
+            scholarship.id,
+            scholarship.studentId,
+            scholarship.scholarshipType,
+            scholarship.reason,
+            status,
+            scholarship.createdAt,
+            new Date(),
+          ),
+          'scholarship.status.updated',
+        ),
+      );
 
     await this.scholarshipCacheService.invalidateScholarshipList();
-    await this.scholarshipMqttPublisher.publishScholarshipStatusUpdated(
-      updatedScholarship,
-    );
-    await this.scholarshipKafkaProducer.publishScholarshipStatusUpdated(
-      updatedScholarship,
-    );
-    await this.scholarshipRabbitMqPublisher.publishScholarshipStatusUpdated(
-      updatedScholarship,
-    );
+    await this.scholarshipOutboxDispatcher.flushPendingEvents();
 
     return updatedScholarship;
   }
@@ -161,5 +173,20 @@ export class ScholarshipService {
     }
 
     await this.scholarshipCacheService.invalidateScholarshipList();
+  }
+
+  private createOutboxEvent(
+    scholarship: Scholarship,
+    eventType: string,
+  ): ScholarshipOutboxEvent {
+    return new ScholarshipOutboxEvent(
+      randomUUID(),
+      scholarship.id,
+      eventType,
+      JSON.stringify(createScholarshipEventPayload(scholarship, eventType)),
+      ScholarshipOutboxStatus.PENDING,
+      new Date(),
+      null,
+    );
   }
 }

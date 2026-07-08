@@ -1,12 +1,15 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { setupSwagger } from './config/swagger.config';
+import { MetricsService } from './modules/metrics/metrics.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const metricsService = app.get(MetricsService);
   const corsOrigin = configService.get<string>('corsOrigin') ?? '*';
 
   app.enableCors({
@@ -21,6 +24,15 @@ async function bootstrap(): Promise<void> {
       transform: true,
     }),
   );
+
+  app.use((request: Request, response: Response, next: NextFunction) => {
+    response.on('finish', () => {
+      const route = request.route?.path ?? request.path ?? 'unknown';
+      metricsService.recordHttpRequest(request.method, route, response.statusCode);
+    });
+
+    next();
+  });
 
   setupSwagger(app);
 

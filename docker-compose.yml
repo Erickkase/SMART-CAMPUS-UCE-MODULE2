@@ -45,6 +45,28 @@ services:
     volumes:
       - kafka_data:/bitnami/kafka
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: smart-campus-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smart-campus-grafana
+    restart: unless-stopped
+    ports:
+      - "3009:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
   redis:
     image: redis:7-alpine
     container_name: smart-campus-redis
@@ -312,6 +334,70 @@ services:
       appointment-postgres:
         condition: service_healthy
 
+  student-request-postgres:
+    image: postgres:16
+    container_name: student-request-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: student_request_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5440:5432"
+    volumes:
+      - student_request_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d student_request_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  student-request-service:
+    build:
+      context: .
+      dockerfile: apps/student-request-service/Dockerfile
+    container_name: student-request-service
+    restart: unless-stopped
+    env_file:
+      - apps/student-request-service/.env.docker
+    ports:
+      - "3010:3010"
+    depends_on:
+      student-request-postgres:
+        condition: service_healthy
+
+  vulnerability-followup-postgres:
+    image: postgres:16
+    container_name: vulnerability-followup-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vulnerability_followup_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5441:5432"
+    volumes:
+      - vulnerability_followup_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vulnerability_followup_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vulnerability-followup-service:
+    build:
+      context: .
+      dockerfile: apps/vulnerability-followup-service/Dockerfile
+    container_name: vulnerability-followup-service
+    restart: unless-stopped
+    env_file:
+      - apps/vulnerability-followup-service/.env.docker
+    ports:
+      - "3011:3011"
+    depends_on:
+      vulnerability-followup-postgres:
+        condition: service_healthy
+
   api-gateway:
     build:
       context: .
@@ -330,6 +416,8 @@ services:
       - enrollment-service
       - student-service
       - appointment-service
+      - student-request-service
+      - vulnerability-followup-service
 
   welfare-frontend:
     build:
@@ -353,12 +441,16 @@ services:
       - psychological-care-service
       - student-service
       - appointment-service
+      - student-request-service
+      - vulnerability-followup-service
 
 volumes:
   mosquitto_data:
   mosquitto_log:
   rabbitmq_data:
   kafka_data:
+  prometheus_data:
+  grafana_data:
   redis_data:
   scholarship_postgres_data:
   socioeconomic_mongo_data:
@@ -368,3 +460,5 @@ volumes:
   student_postgres_data:
   notification_postgres_data:
   appointment_postgres_data:
+  student_request_postgres_data:
+  vulnerability_followup_postgres_data:
