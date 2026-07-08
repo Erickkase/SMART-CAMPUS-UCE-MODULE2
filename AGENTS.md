@@ -12,6 +12,7 @@ High-signal notes for OpenCode sessions working in this repo.
   - `apps/subject-service`, `apps/enrollment-service`, `apps/student-service`, `apps/notification-service` — NestJS; PostgreSQL/TypeORM or in-memory.
   - `apps/api-gateway` — NestJS reverse proxy to all backend services.
   - `apps/welfare-frontend` — Next.js 15, separate `package.json`, path alias `@/*`.
+  - `apps/welfare-desktop` — Electron + Express desktop app, separate `package.json`, React + Vite renderer.
   - `apps/welfare-mobile` — React Native / Expo mobile app, separate `package.json`, uses Expo Router.
 - `libs/shared-welfare-api` — Shared TypeScript API client and types used by `welfare-frontend` and `welfare-mobile`.
 - Infrastructure as code: `infra/terraform/` (AWS QA, single EC2, Docker Compose on host).
@@ -21,6 +22,7 @@ High-signal notes for OpenCode sessions working in this repo.
 - Root deps: `npm install` at repo root (backend + shared tooling).
 - Frontend deps: `cd apps/welfare-frontend && npm install` (own `package-lock.json`).
 - Shared API deps: `cd libs/shared-welfare-api && npm install && npm run build`.
+- Desktop deps: `cd apps/welfare-desktop && npm install` (own `package-lock.json`).
 - Mobile deps: `cd apps/welfare-mobile && npm install` (own `package-lock.json`).
 
 ## Run / build
@@ -35,6 +37,7 @@ High-signal notes for OpenCode sessions working in this repo.
   - `npm run build:appointment`
 - Or use `npx nest start <app> --watch` / `npx nest build <app>`.
 - Frontend dev: `cd apps/welfare-frontend && npm run dev` → port `3003`.
+- Desktop dev: `cd apps/welfare-desktop && npm run dev` → Electron + Vite (Express proxy on `3099`).
 - Mobile dev: `cd apps/welfare-mobile && npm run start` → scan QR with Expo Go or press `a`/`i`/`w`.
 - Docker full stack: `docker compose up -d --build` from root.
 
@@ -46,10 +49,12 @@ High-signal notes for OpenCode sessions working in this repo.
 | socioeconomic-form-service | 3001 | 3001 |
 | psychological-care-service | 3003 | 3002 |
 | welfare-frontend (dev) | 3003 | 3003 |
+| welfare-desktop (Express proxy) | 3099 | — |
 | appointment-service | 3008 | 3008 |
 
 - `psychological-care-service` defaults to `3003`, which collides with the Next.js dev server. Run only one on that port or override `PORT`.
 - Docker Compose exposes the frontend on host `3003` (container `3002`), while psychological-care-service is on host `3002`. Some docs still say `3002` for the frontend — trust `docker-compose.yml`.
+- Welfare Desktop embeds an Express proxy on port `3099`. It proxies `/api/*` to the corresponding backend services.
 
 ## Environment / local dev without databases
 
