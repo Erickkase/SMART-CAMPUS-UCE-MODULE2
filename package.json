@@ -37,7 +37,7 @@
     "package:welfare-desktop": "cd apps/welfare-desktop && npm run package",
     "package:welfare-desktop:win": "cd apps/welfare-desktop && npm run package:win",
     "build:student-request": "nest build student-request-service",
-    "build:vulnerability-followup": "nest build vulnerability-followup-service"
+    "build:vulnerability-followup": "nest build vulnerability-followup-service",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
