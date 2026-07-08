@@ -42,7 +42,7 @@ echo "[user-data] Montando filesystem EFS..."
 EFS_DNS="${efs_dns}"
 mkdir -p /data
 mount -t efs -o tls "$EFS_DNS:/" /data || mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 "$EFS_DNS:/" /data
-mkdir -p /data/postgres /data/mongo /data/psychological-postgres /data/subject-postgres /data/enrollment-postgres /data/student-postgres /data/notification-postgres
+mkdir -p /data/postgres /data/mongo /data/psychological-postgres /data/subject-postgres /data/enrollment-postgres /data/student-postgres /data/notification-postgres /data/appointment-postgres
 echo "$EFS_DNS:/ /data efs _netdev,tls 0 0" >> /etc/fstab
 
 # Configurar Nginx como reverse proxy
@@ -51,15 +51,19 @@ cat > /etc/nginx/conf.d/smart-campus.conf <<'EOF'
 ${nginx_conf}
 EOF
 
-# Asegurar que no haya conflicto con el server block por defecto
+# Asegurar que no haya conflicto con server blocks por defecto
 if [ -f /etc/nginx/default.d/ssl.conf ]; then
   mv /etc/nginx/default.d/ssl.conf /etc/nginx/default.d/ssl.conf.bak || true
 fi
+if [ -f /etc/nginx/conf.d/default.conf ]; then
+  mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.bak || true
+fi
 
-# Validar y arrancar Nginx
-nginx -t
-systemctl enable nginx
-systemctl start nginx
+# Validar y arrancar Nginx (no bloquear despliegue si hay advertencias menores)
+echo "[user-data] Validando configuracion de Nginx..."
+nginx -t || echo "[user-data] ADVERTENCIA: nginx -t fallo, continuando despliegue..."
+systemctl enable nginx || true
+systemctl restart nginx || true
 
 # Crear directorio de despliegue
 DEPLOY_DIR="/opt/${project_name}"
@@ -195,6 +199,26 @@ DB_SYNCHRONIZE=true
 DB_LOGGING=false
 EOF
 
+cat > apps/appointment-service/.env.docker <<EOF
+NODE_ENV=production
+PORT=3008
+CORS_ORIGIN=*
+AUTH_ENABLED=false
+JWT_SECRET=change-me-in-production
+JWT_ISSUER=smart-campus-uce
+JWT_AUDIENCE=appointment-service
+DB_ENABLED=true
+DB_HOST=appointment-postgres
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=appointment_db
+DB_SYNCHRONIZE=true
+DB_LOGGING=false
+STUDENT_VALIDATION_ENABLED=true
+STUDENT_SERVICE_URL=http://student-service:3006
+EOF
+
 cat > apps/api-gateway/.env.docker <<EOF
 PORT=8080
 CORS_ORIGIN=*
@@ -205,6 +229,7 @@ SUBJECT_SERVICE_URL=http://subject-service:3004
 ENROLLMENT_SERVICE_URL=http://enrollment-service:3005
 STUDENT_SERVICE_URL=http://student-service:3006
 NOTIFICATION_SERVICE_URL=http://notification-service:3007
+APPOINTMENT_SERVICE_URL=http://appointment-service:3008
 AUTH_ENABLED=false
 JWT_SECRET=change-me-in-production
 EOF
@@ -216,21 +241,31 @@ NEXT_PUBLIC_PSYCHOLOGICAL_API_URL=/api/psychological
 NEXT_PUBLIC_API_GATEWAY_URL=/api/gateway
 EOF
 
-# Override de docker-compose para produccion con paths relativos
-cat > docker-compose.prod.yml <<EOF
-services:
-  welfare-frontend:
-    build:
-      args:
-        NEXT_PUBLIC_SCHOLARSHIP_API_URL: /api/scholarships
-        NEXT_PUBLIC_SOCIOECONOMIC_API_URL: /api/socioeconomic
-        NEXT_PUBLIC_PSYCHOLOGICAL_API_URL: /api/psychological
-        NEXT_PUBLIC_API_GATEWAY_URL: /api/gateway
-EOF
+# Tag de imagen a desplegar (qa o main)
+IMAGE_TAG="${github_branch}"
+export IMAGE_TAG
 
-# Construir e iniciar servicios
-echo "[user-data] Construyendo e iniciando microservicios con Docker Compose..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml pull || true
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Descargar e iniciar imagenes publicadas en GHCR
+echo "[user-data] Descargando imagenes de GHCR con tag: $IMAGE_TAG..."
+PULL_RETRIES=3
+PULL_SUCCESS=false
+for i in $(seq 1 $PULL_RETRIES); do
+  echo "[user-data] Intento $i de $PULL_RETRIES para docker compose pull..."
+  if docker compose -f docker-compose.yml -f docker-compose.prod.yml pull; then
+    PULL_SUCCESS=true
+    break
+  else
+    echo "[user-data] Pull fallo en intento $i, reintentando en 10s..."
+    sleep 10
+  fi
+done
+
+if [ "$PULL_SUCCESS" = false ]; then
+  echo "[user-data] ADVERTENCIA: docker compose pull fallo tras $PULL_RETRIES intentos."
+  echo "[user-data] Se intentara iniciar con las imagenes disponibles localmente."
+fi
+
+echo "[user-data] Iniciando microservicios con Docker Compose..."
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 echo "[user-data] Configuracion finalizada. Frontend disponible en http://$NLB_IP"

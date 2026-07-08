@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Notification } from '../../domain/entities/notification.entity';
+import { OutboxEvent } from '../../domain/entities/outbox-event.entity';
 import { NotificationChannel } from '../../domain/enums/notification-channel.enum';
 import { NotificationStatus } from '../../domain/enums/notification-status.enum';
+import { OutboxEventStatus } from '../../domain/enums/outbox-event-status.enum';
 import { RecipientType } from '../../domain/enums/recipient-type.enum';
 import {
   NOTIFICATION_REPOSITORY,
@@ -28,6 +30,7 @@ const mockNotification: Notification = {
 
 const mockNotificationRepository: jest.Mocked<NotificationRepository> = {
   create: jest.fn(),
+  createWithOutbox: jest.fn(),
   findAll: jest.fn(),
   findById: jest.fn(),
   findByRecipientId: jest.fn(),
@@ -54,8 +57,8 @@ describe('NotificationService', () => {
     jest.clearAllMocks();
   });
 
-  it('should create a notification with PENDING status', async () => {
-    mockNotificationRepository.create.mockResolvedValue(mockNotification);
+  it('should create a notification with PENDING status and an outbox event', async () => {
+    mockNotificationRepository.createWithOutbox.mockResolvedValue(mockNotification);
 
     const dto: CreateNotificationDto = {
       recipientId: 'recipient-id',
@@ -68,10 +71,15 @@ describe('NotificationService', () => {
     const result = await service.createNotification(dto);
 
     expect(result).toEqual(mockNotification);
-    expect(mockNotificationRepository.create).toHaveBeenCalledTimes(1);
-    const created = mockNotificationRepository.create.mock.calls[0][0];
-    expect(created.status).toBe(NotificationStatus.PENDING);
-    expect(created.recipientId).toBe(dto.recipientId);
+    expect(mockNotificationRepository.createWithOutbox).toHaveBeenCalledTimes(1);
+    const [createdNotification, createdOutboxEvent] =
+      mockNotificationRepository.createWithOutbox.mock.calls[0];
+    expect(createdNotification.status).toBe(NotificationStatus.PENDING);
+    expect(createdNotification.recipientId).toBe(dto.recipientId);
+    expect(createdOutboxEvent).toBeInstanceOf(OutboxEvent);
+    expect(createdOutboxEvent.eventType).toBe('NotificationCreated');
+    expect(createdOutboxEvent.status).toBe(OutboxEventStatus.PENDING);
+    expect(createdOutboxEvent.aggregateId).toBe(createdNotification.id);
   });
 
   it('should return all notifications', async () => {

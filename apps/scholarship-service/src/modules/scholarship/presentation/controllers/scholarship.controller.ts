@@ -27,16 +27,34 @@ import {
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { JwtPayload } from '../../../auth/interfaces/jwt-payload.interface';
-import { ScholarshipService } from '../../application/services/scholarship.service';
+import { CreateScholarshipCommand } from '../../application/commands/create-scholarship.command';
+import { DeleteScholarshipCommand } from '../../application/commands/delete-scholarship.command';
+import { UpdateScholarshipCommand } from '../../application/commands/update-scholarship.command';
+import { UpdateScholarshipStatusCommand } from '../../application/commands/update-scholarship-status.command';
 import { CreateScholarshipDto } from '../../application/dtos/create-scholarship.dto';
 import { UpdateScholarshipDto } from '../../application/dtos/update-scholarship.dto';
 import { UpdateScholarshipStatusDto } from '../../application/dtos/update-scholarship-status.dto';
+import { CreateScholarshipHandler } from '../../application/handlers/create-scholarship.handler';
+import { DeleteScholarshipHandler } from '../../application/handlers/delete-scholarship.handler';
+import { GetScholarshipByIdHandler } from '../../application/handlers/get-scholarship-by-id.handler';
+import { GetScholarshipsHandler } from '../../application/handlers/get-scholarships.handler';
+import { UpdateScholarshipHandler } from '../../application/handlers/update-scholarship.handler';
+import { UpdateScholarshipStatusHandler } from '../../application/handlers/update-scholarship-status.handler';
+import { GetScholarshipByIdQuery } from '../../application/queries/get-scholarship-by-id.query';
+import { GetScholarshipsQuery } from '../../application/queries/get-scholarships.query';
 import { Scholarship } from '../../domain/entities/scholarship.entity';
 
 @ApiTags('Scholarships')
 @Controller('scholarships')
 export class ScholarshipController {
-  constructor(private readonly scholarshipService: ScholarshipService) {}
+  constructor(
+    private readonly createScholarshipHandler: CreateScholarshipHandler,
+    private readonly getScholarshipsHandler: GetScholarshipsHandler,
+    private readonly getScholarshipByIdHandler: GetScholarshipByIdHandler,
+    private readonly updateScholarshipHandler: UpdateScholarshipHandler,
+    private readonly updateScholarshipStatusHandler: UpdateScholarshipStatusHandler,
+    private readonly deleteScholarshipHandler: DeleteScholarshipHandler,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -61,7 +79,9 @@ export class ScholarshipController {
   createScholarship(
     @Body() createScholarshipDto: CreateScholarshipDto,
   ): Promise<Scholarship> {
-    return this.scholarshipService.createScholarship(createScholarshipDto);
+    return this.createScholarshipHandler.execute(
+      new CreateScholarshipCommand(createScholarshipDto),
+    );
   }
 
   @Get()
@@ -89,7 +109,7 @@ export class ScholarshipController {
   getScholarships(
     @CurrentUser() _currentUser?: JwtPayload,
   ): Promise<Scholarship[]> {
-    return this.scholarshipService.getScholarships();
+    return this.getScholarshipsHandler.execute(new GetScholarshipsQuery());
   }
 
   @Get(':id')
@@ -116,7 +136,7 @@ export class ScholarshipController {
   getScholarshipById(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<Scholarship> {
-    return this.scholarshipService.getScholarshipById(id);
+    return this.getScholarshipByIdHandler.execute(new GetScholarshipByIdQuery(id));
   }
 
   @Patch(':id')
@@ -132,7 +152,9 @@ export class ScholarshipController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateScholarshipDto: UpdateScholarshipDto,
   ): Promise<Scholarship> {
-    return this.scholarshipService.updateScholarship(id, updateScholarshipDto);
+    return this.updateScholarshipHandler.execute(
+      new UpdateScholarshipCommand(id, updateScholarshipDto),
+    );
   }
 
   @Patch(':id/status')
@@ -148,9 +170,8 @@ export class ScholarshipController {
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateScholarshipStatusDto: UpdateScholarshipStatusDto,
   ): Promise<Scholarship> {
-    return this.scholarshipService.updateScholarshipStatus(
-      id,
-      updateScholarshipStatusDto,
+    return this.updateScholarshipStatusHandler.execute(
+      new UpdateScholarshipStatusCommand(id, updateScholarshipStatusDto),
     );
   }
 
@@ -165,6 +186,6 @@ export class ScholarshipController {
   async deleteScholarship(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<void> {
-    await this.scholarshipService.deleteScholarship(id);
+    await this.deleteScholarshipHandler.execute(new DeleteScholarshipCommand(id));
   }
 }

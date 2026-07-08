@@ -4,6 +4,14 @@
 
 `scholarship-service` is a NestJS microservice responsible for scholarship request management in SMART CAMPUS UCE Module 2.
 
+## CQRS Structure
+
+This service now follows a lightweight CQRS organization:
+
+- commands handle write operations such as create, update, status changes, and delete
+- queries handle read operations such as list and get by id
+- handlers orchestrate command and query execution from the controller layer
+
 ## Responsibilities
 
 - Create scholarship requests.
@@ -63,6 +71,12 @@ Source files:
 | `DB_USERNAME` | PostgreSQL username |
 | `DB_PASSWORD` | PostgreSQL password |
 | `DB_NAME` | PostgreSQL database |
+| `MQTT_ENABLED` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | MQTT client identifier |
+| `REDIS_ENABLED` | Enables Redis integration hooks |
+| `REDIS_HOST` | Redis host |
+| `REDIS_PORT` | Redis port |
 | `DB_SYNCHRONIZE` | TypeORM schema synchronization |
 | `DB_LOGGING` | TypeORM query logging |
 
@@ -71,6 +85,53 @@ Source files:
 - Local development can run without PostgreSQL when `DB_ENABLED=false`.
 - Docker Compose uses PostgreSQL with `DB_ENABLED=true`.
 - The Compose database service name is `postgres`.
+
+## Redis Cache
+
+This service uses Redis to cache scholarship list queries.
+
+| Cache key | Purpose |
+| --- | --- |
+| `scholarships:list` | Caches the full scholarship list |
+
+The cache is invalidated when a scholarship is:
+
+- created
+- updated
+- approved or rejected
+- deleted
+
+## MQTT Events
+
+This service publishes the following MQTT topics:
+
+| Topic | Trigger |
+| --- | --- |
+| `scholarship.created` | A scholarship request is created |
+| `scholarship.status.updated` | A scholarship request status changes |
+
+## RabbitMQ Events
+
+This service also publishes RabbitMQ messages to the `welfare.events` topic exchange:
+
+| Routing key | Trigger |
+| --- | --- |
+| `scholarship.created` | A scholarship request is created |
+| `scholarship.status.updated` | A scholarship request status changes |
+
+## Kafka Events
+
+This service also publishes Kafka messages to the `scholarship.events` topic.
+
+## Transactional Outbox Baseline
+
+This service now stores scholarship lifecycle events in a dedicated outbox structure before dispatching them through MQTT, RabbitMQ, and Kafka.
+
+Current outbox responsibilities:
+
+- persist pending scholarship domain events
+- dispatch pending events through configured brokers
+- mark events as published after successful fan-out
 
 ## Local Execution
 

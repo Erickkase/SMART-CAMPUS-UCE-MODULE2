@@ -79,6 +79,33 @@
       "compilerOptions": {
         "tsConfigPath": "apps/notification-service/tsconfig.app.json"
       }
+    },
+    "appointment-service": {
+      "type": "application",
+      "root": "apps/appointment-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/appointment-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/appointment-service/tsconfig.app.json"
+      }
+    },
+    "student-request-service": {
+      "type": "application",
+      "root": "apps/student-request-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/student-request-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/student-request-service/tsconfig.app.json"
+      }
+    },
+    "vulnerability-followup-service": {
+      "type": "application",
+      "root": "apps/vulnerability-followup-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/vulnerability-followup-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/vulnerability-followup-service/tsconfig.app.json"
+      }
     }
   }
 }

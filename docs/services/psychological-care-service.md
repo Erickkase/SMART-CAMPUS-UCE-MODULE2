@@ -69,6 +69,12 @@ Source files:
 | `DB_USERNAME` | PostgreSQL username |
 | `DB_PASSWORD` | PostgreSQL password |
 | `DB_NAME` | PostgreSQL database |
+| `MQTT_ENABLED` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | MQTT client identifier |
+| `REDIS_ENABLED` | Enables Redis integration hooks |
+| `REDIS_HOST` | Redis host |
+| `REDIS_PORT` | Redis port |
 | `DB_SYNCHRONIZE` | TypeORM schema synchronization |
 | `DB_LOGGING` | TypeORM query logging |
 
@@ -77,6 +83,28 @@ Source files:
 - Local development can run without PostgreSQL when `DB_ENABLED=false`.
 - Docker Compose uses PostgreSQL with `DB_ENABLED=true`.
 - The Compose database service name is `psychological-postgres`.
+
+## MQTT Events
+
+This service subscribes to the following MQTT topics:
+
+| Topic | Source |
+| --- | --- |
+| `scholarship.created` | `scholarship-service` |
+| `scholarship.status.updated` | `scholarship-service` |
+
+## RabbitMQ Events
+
+This service subscribes to the `welfare.events` topic exchange with these routing keys:
+
+| Routing key | Source |
+| --- | --- |
+| `scholarship.created` | `scholarship-service` |
+| `scholarship.status.updated` | `scholarship-service` |
+
+## Kafka Events
+
+This service also consumes scholarship lifecycle messages from the `scholarship.events` topic.
 
 ## Local Execution
 

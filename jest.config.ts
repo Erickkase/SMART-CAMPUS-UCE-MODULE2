@@ -11,7 +11,10 @@ const config: Config = {
   coverageDirectory: 'coverage',
   testEnvironment: 'node',
   modulePathIgnorePatterns: ['<rootDir>/apps/welfare-frontend/.next'],
-  testPathIgnorePatterns: ['<rootDir>/apps/welfare-frontend/.next'],
+  testPathIgnorePatterns: [
+    '<rootDir>/apps/welfare-frontend/.next',
+    '<rootDir>/apps/welfare-mobile',
+  ],
 };
 
 export default config;

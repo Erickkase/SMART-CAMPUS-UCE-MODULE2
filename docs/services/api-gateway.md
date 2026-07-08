@@ -52,6 +52,27 @@ Source files:
 | `STUDENT_SERVICE_URL` | Student service base URL |
 | `AUTH_ENABLED` | Enables gateway JWT guard behavior |
 | `JWT_SECRET` | JWT secret |
+| `MQTT_ENABLED` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | MQTT client identifier |
+| `REDIS_ENABLED` | Enables Redis integration hooks |
+| `REDIS_HOST` | Redis host |
+| `REDIS_PORT` | Redis port |
+| `RATE_LIMIT_TTL` | Rate limiting window in milliseconds |
+| `RATE_LIMIT_LIMIT` | Maximum requests per time window |
+| `CIRCUIT_BREAKER_TIMEOUT_MS` | Upstream timeout before a proxy failure |
+| `CIRCUIT_BREAKER_FAILURE_THRESHOLD` | Failures required to open the circuit |
+| `CIRCUIT_BREAKER_RESET_TIMEOUT_MS` | Wait time before retrying an open circuit |
+
+## Resilience And Protection
+
+The gateway now provides:
+
+- global request throttling for proxied routes
+- a per-route in-memory circuit breaker for downstream failures
+- timeout handling for upstream requests
+
+The `/api/health` route is excluded from throttling.
 
 ## Local Execution
 

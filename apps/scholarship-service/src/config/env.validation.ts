@@ -42,5 +42,13 @@ export function validateEnv(config: EnvConfig): EnvConfig {
     }
   }
 
+  if (config.REDIS_PORT) {
+    const redisPort = Number(config.REDIS_PORT);
+
+    if (Number.isNaN(redisPort) || redisPort <= 0) {
+      throw new Error('Environment variable REDIS_PORT must be a valid number');
+    }
+  }
+
   return config;
 }

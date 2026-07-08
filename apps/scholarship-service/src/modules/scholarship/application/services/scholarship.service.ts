@@ -9,18 +9,35 @@ import { CreateScholarshipDto } from '../dtos/create-scholarship.dto';
 import { UpdateScholarshipDto } from '../dtos/update-scholarship.dto';
 import { UpdateScholarshipStatusDto } from '../dtos/update-scholarship-status.dto';
 import { Scholarship } from '../../domain/entities/scholarship.entity';
+import { ScholarshipOutboxEvent } from '../../domain/entities/scholarship-outbox-event.entity';
+import { ScholarshipOutboxStatus } from '../../domain/enums/scholarship-outbox-status.enum';
 import {
   SCHOLARSHIP_REPOSITORY,
   ScholarshipRepository,
   UpdateScholarshipData,
 } from '../../domain/repositories/scholarship.repository';
 import { ScholarshipStatus } from '../../domain/enums/scholarship-status.enum';
+import { ScholarshipCacheService } from '../../infrastructure/cache/scholarship-cache.service';
+import { ScholarshipOutboxDispatcherService } from '../../infrastructure/outbox/scholarship-outbox-dispatcher.service';
+import { ScholarshipTransactionalWriterService } from '../../infrastructure/outbox/scholarship-transactional-writer.service';
+
+const createScholarshipEventPayload = (scholarship: Scholarship, event: string) => ({
+  event,
+  scholarshipId: scholarship.id,
+  studentId: scholarship.studentId,
+  scholarshipType: scholarship.scholarshipType,
+  status: scholarship.status,
+  occurredAt: scholarship.updatedAt.toISOString(),
+});
 
 @Injectable()
 export class ScholarshipService {
   constructor(
     @Inject(SCHOLARSHIP_REPOSITORY)
     private readonly scholarshipRepository: ScholarshipRepository,
+    private readonly scholarshipCacheService: ScholarshipCacheService,
+    private readonly scholarshipOutboxDispatcher: ScholarshipOutboxDispatcherService,
+    private readonly scholarshipTransactionalWriter: ScholarshipTransactionalWriterService,
   ) {}
 
   async createScholarship(
@@ -38,11 +55,26 @@ export class ScholarshipService {
       now,
     );
 
-    return this.scholarshipRepository.create(scholarship);
+    const createdScholarship =
+      await this.scholarshipTransactionalWriter.createScholarshipWithEvent(
+        scholarship,
+        this.createOutboxEvent(scholarship, 'scholarship.created'),
+      );
+    await this.scholarshipCacheService.invalidateScholarshipList();
+    await this.scholarshipOutboxDispatcher.flushPendingEvents();
+    return createdScholarship;
   }
 
   async getScholarships(): Promise<Scholarship[]> {
-    return this.scholarshipRepository.findAll();
+    const cachedScholarships = await this.scholarshipCacheService.getScholarshipList();
+
+    if (cachedScholarships) {
+      return cachedScholarships;
+    }
+
+    const scholarships = await this.scholarshipRepository.findAll();
+    await this.scholarshipCacheService.setScholarshipList(scholarships);
+    return scholarships;
   }
 
   async getScholarshipById(id: string): Promise<Scholarship> {
@@ -76,6 +108,8 @@ export class ScholarshipService {
       throw new NotFoundException(`Scholarship with id ${id} was not found`);
     }
 
+    await this.scholarshipCacheService.invalidateScholarshipList();
+
     return updatedScholarship;
   }
 
@@ -106,14 +140,26 @@ export class ScholarshipService {
       );
     }
 
-    const updatedScholarship = await this.scholarshipRepository.updateStatus(
-      id,
-      status,
-    );
+    const updatedScholarship =
+      await this.scholarshipTransactionalWriter.updateScholarshipStatusWithEvent(
+        id,
+        status,
+        this.createOutboxEvent(
+          new Scholarship(
+            scholarship.id,
+            scholarship.studentId,
+            scholarship.scholarshipType,
+            scholarship.reason,
+            status,
+            scholarship.createdAt,
+            new Date(),
+          ),
+          'scholarship.status.updated',
+        ),
+      );
 
-    if (!updatedScholarship) {
-      throw new NotFoundException(`Scholarship with id ${id} was not found`);
-    }
+    await this.scholarshipCacheService.invalidateScholarshipList();
+    await this.scholarshipOutboxDispatcher.flushPendingEvents();
 
     return updatedScholarship;
   }
@@ -125,5 +171,22 @@ export class ScholarshipService {
     if (!deleted) {
       throw new NotFoundException(`Scholarship with id ${id} was not found`);
     }
+
+    await this.scholarshipCacheService.invalidateScholarshipList();
+  }
+
+  private createOutboxEvent(
+    scholarship: Scholarship,
+    eventType: string,
+  ): ScholarshipOutboxEvent {
+    return new ScholarshipOutboxEvent(
+      randomUUID(),
+      scholarship.id,
+      eventType,
+      JSON.stringify(createScholarshipEventPayload(scholarship, eventType)),
+      ScholarshipOutboxStatus.PENDING,
+      new Date(),
+      null,
+    );
   }
 }

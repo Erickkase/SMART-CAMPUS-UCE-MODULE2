@@ -70,6 +70,13 @@ smart-campus-uce-module2/
 | `psychological-care-service` | `http://localhost:3003` | Swagger: `/api/docs` in local standalone mode |
 | `api-gateway` | `http://localhost:8080` | Gateway root for proxied backend routes |
 | `welfare-frontend` | `http://localhost:3003` | Next.js dev server |
+| `mqtt-broker` | `localhost:1883` | MQTT broker for async event integration |
+| `rabbitmq` | `localhost:5672` | AMQP broker for queue-based messaging |
+| `rabbitmq-management` | `http://localhost:15672` | RabbitMQ management console |
+| `kafka` | `localhost:9094` | Kafka broker for event streaming |
+| `prometheus` | `http://localhost:9090` | Metrics and service scraping |
+| `grafana` | `http://localhost:3009` | Observability dashboards |
+| `redis` | `localhost:6379` | Cache and shared transient data |
 
 ### Docker Compose Ports
 
@@ -89,6 +96,13 @@ smart-campus-uce-module2/
 | `student-service` | `3006` | `3006` |
 | `api-gateway` | `8080` | `8080` |
 | `welfare-frontend` | `3003` | `3002` |
+| `mqtt-broker` | `1883` | `1883` |
+| `rabbitmq` | `5672` | `5672` |
+| `rabbitmq-management` | `15672` | `15672` |
+| `kafka` | `9094` | `9094` |
+| `prometheus` | `9090` | `9090` |
+| `grafana` | `3009` | `3000` |
+| `redis` | `6379` | `6379` |
 
 Important note: `welfare-frontend` and `psychological-care-service` both use `3003` in standalone local execution, but not at the same time. In Docker Compose, the frontend is exposed on `3003` and the psychological service on `3002`.
 
@@ -113,6 +127,12 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `DB_USERNAME` | `postgres` | PostgreSQL user |
 | `DB_PASSWORD` | `postgres` | PostgreSQL password |
 | `DB_NAME` | `scholarship_db` | Database name |
+| `MQTT_ENABLED` | `false` or `true` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | `mqtt://localhost:1883` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | `scholarship-service` | MQTT client identifier |
+| `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
+| `REDIS_HOST` | `localhost` or `redis` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
 | `DB_SYNCHRONIZE` | `true` | TypeORM synchronize flag |
 | `DB_LOGGING` | `false` | TypeORM query logging |
 
@@ -143,6 +163,12 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `DB_USERNAME` | `postgres` | PostgreSQL user |
 | `DB_PASSWORD` | `postgres` | PostgreSQL password |
 | `DB_NAME` | `psychological_care_db` | Database name |
+| `MQTT_ENABLED` | `false` or `true` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | `mqtt://localhost:1883` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | `psychological-care-service` | MQTT client identifier |
+| `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
+| `REDIS_HOST` | `localhost` or `redis` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
 | `DB_SYNCHRONIZE` | `false` or `true` | TypeORM synchronize flag |
 | `DB_LOGGING` | `false` | TypeORM query logging |
 
@@ -160,6 +186,17 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 | `STUDENT_SERVICE_URL` | `http://localhost:3006` | Student service base URL |
 | `AUTH_ENABLED` | `false` | Enables gateway JWT guard |
 | `JWT_SECRET` | `development-secret` | JWT signing secret |
+| `MQTT_ENABLED` | `false` or `true` | Enables MQTT integration hooks |
+| `MQTT_BROKER_URL` | `mqtt://localhost:1883` | MQTT broker connection URL |
+| `MQTT_CLIENT_ID` | `api-gateway` | MQTT client identifier |
+| `REDIS_ENABLED` | `false` or `true` | Enables Redis integration hooks |
+| `REDIS_HOST` | `localhost` or `redis` | Redis host |
+| `REDIS_PORT` | `6379` | Redis port |
+| `RATE_LIMIT_TTL` | `60000` | Rate limiting window in milliseconds |
+| `RATE_LIMIT_LIMIT` | `30` | Maximum requests per window |
+| `CIRCUIT_BREAKER_TIMEOUT_MS` | `5000` | Upstream timeout before failure |
+| `CIRCUIT_BREAKER_FAILURE_THRESHOLD` | `3` | Failures before opening circuit |
+| `CIRCUIT_BREAKER_RESET_TIMEOUT_MS` | `15000` | Time before retrying an open circuit |
 
 ### `welfare-frontend`
 
@@ -174,6 +211,30 @@ Each application provides `.env.example` for local execution and `.env.docker` f
 
 The root `docker-compose.yml` orchestrates the full local stack.
 
+### MQTT event topics
+
+| Topic | Publisher | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `scholarship.created` | `scholarship-service` | `psychological-care-service` | Signals that a scholarship request was created |
+| `scholarship.status.updated` | `scholarship-service` | `psychological-care-service` | Signals that a scholarship request changed status |
+
+### RabbitMQ routing keys
+
+RabbitMQ currently uses the `welfare.events` topic exchange with these routing keys:
+
+| Routing key | Publisher | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `scholarship.created` | `scholarship-service` | `psychological-care-service` | Queue-based scholarship creation event |
+| `scholarship.status.updated` | `scholarship-service` | `psychological-care-service` | Queue-based scholarship status update event |
+
+### Kafka topic
+
+Kafka currently streams scholarship domain events through this topic:
+
+| Topic | Publisher | Consumer | Purpose |
+| --- | --- | --- | --- |
+| `scholarship.events` | `scholarship-service` | `psychological-care-service` | Event streaming for scholarship lifecycle changes |
+
 ### Included infrastructure
 
 | Service | Purpose |
@@ -184,6 +245,19 @@ The root `docker-compose.yml` orchestrates the full local stack.
 | `subject-postgres` | Database for `subject-service` |
 | `enrollment-postgres` | Database for `enrollment-service` |
 | `student-postgres` | Database for `student-service` |
+| `mqtt-broker` | MQTT broker for event-driven communication |
+| `rabbitmq` | AMQP broker for asynchronous queues and workers |
+| `kafka` | Event streaming broker for domain events and audit flows |
+| `prometheus` | Metrics collection and scraping |
+| `grafana` | Dashboard visualization for observability |
+| `redis` | In-memory cache and shared transient storage |
+
+### Current metrics exposure
+
+| Service | Metrics endpoint |
+| --- | --- |
+| `api-gateway` | `http://localhost:8080/metrics` |
+| `scholarship-service` | `http://localhost:3000/metrics` |
 
 ### Included applications
 
@@ -197,6 +271,23 @@ The root `docker-compose.yml` orchestrates the full local stack.
 | `student-service` | Academic student API |
 | `api-gateway` | Unified backend entry point |
 | `welfare-frontend` | Web application |
+
+### Gateway protection
+
+The `api-gateway` includes two runtime protection mechanisms:
+
+| Mechanism | Purpose |
+| --- | --- |
+| Rate limiting | Limits repeated requests inside a fixed time window |
+| Circuit breaker | Stops forwarding calls temporarily after repeated downstream failures |
+
+### Redis cache usage
+
+Current Redis usage introduced in this iteration:
+
+| Service | Cached resource | Invalidation strategy |
+| --- | --- | --- |
+| `scholarship-service` | Scholarship list queries | Cleared on create, update, status change, and delete |
 
 ### Start the full stack
 
@@ -305,6 +396,22 @@ Detailed application documentation is available here:
 | `docs/services/psychological-care-service.md` | Psychological care service release documentation |
 | `docs/services/api-gateway.md` | API Gateway release documentation |
 | `docs/services/welfare-frontend.md` | Frontend release documentation |
+
+## Current CQRS Adoption
+
+The first explicit CQRS implementation in the monorepo is currently applied in:
+
+| Service | Read side | Write side |
+| --- | --- | --- |
+| `scholarship-service` | query handlers | command handlers |
+
+## Current Outbox Adoption
+
+The first outbox baseline in the monorepo is currently applied in:
+
+| Service | Purpose |
+| --- | --- |
+| `scholarship-service` | Persist and dispatch scholarship lifecycle events |
 
 ## Additional Release Files
 

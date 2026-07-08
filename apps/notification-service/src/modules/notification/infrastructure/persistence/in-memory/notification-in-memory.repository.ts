@@ -1,17 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Notification } from '../../../domain/entities/notification.entity';
+import { OutboxEvent } from '../../../domain/entities/outbox-event.entity';
 import { NotificationStatus } from '../../../domain/enums/notification-status.enum';
 import {
   NotificationRepository,
   UpdateNotificationData,
 } from '../../../domain/repositories/notification.repository';
+import {
+  OUTBOX_REPOSITORY,
+  OutboxRepository,
+} from '../../../domain/repositories/outbox.repository';
 
 @Injectable()
 export class NotificationInMemoryRepository implements NotificationRepository {
   private readonly notifications = new Map<string, Notification>();
 
+  constructor(
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: OutboxRepository,
+  ) {}
+
   async create(notification: Notification): Promise<Notification> {
     this.notifications.set(notification.id, notification);
+    return notification;
+  }
+
+  async createWithOutbox(
+    notification: Notification,
+    outboxEvent: OutboxEvent,
+  ): Promise<Notification> {
+    this.notifications.set(notification.id, notification);
+    await this.outboxRepository.create(outboxEvent);
     return notification;
   }
 

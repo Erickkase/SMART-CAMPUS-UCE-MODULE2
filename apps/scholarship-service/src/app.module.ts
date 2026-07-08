@@ -5,6 +5,8 @@ import envConfiguration from './config/env.configuration';
 import { validateEnv } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { MetricsController } from './modules/metrics/metrics.controller';
+import { MetricsService } from './modules/metrics/metrics.service';
 import { ScholarshipTypeOrmEntity } from './modules/scholarship/infrastructure/persistence/typeorm/entities/scholarship.typeorm-entity';
 import { ScholarshipModule } from './modules/scholarship/scholarship.module';
 
@@ -40,5 +42,7 @@ import { ScholarshipModule } from './modules/scholarship/scholarship.module';
     ScholarshipModule,
     HealthModule,
   ],
+  controllers: [MetricsController],
+  providers: [MetricsService],
 })
 export class AppModule {}
