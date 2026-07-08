@@ -4,7 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/metro-runtime": "~57.0.3",
-    "@smart-campus/shared-welfare-api": "file:../../libs/shared-welfare-api",
+    "@smart-campus/shared-welfare-api": "npm:@Erickkase/smart-campus-shared-welfare-api@^1.0.0",
     "axios": "^1.18.1",
     "expo": "~57.0.2",
     "expo-constants": "~57.0.0",

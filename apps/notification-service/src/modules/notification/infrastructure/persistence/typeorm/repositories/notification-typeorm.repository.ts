@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Notification } from '../../../../domain/entities/notification.entity';
+import { OutboxEvent } from '../../../../domain/entities/outbox-event.entity';
 import { NotificationStatus } from '../../../../domain/enums/notification-status.enum';
 import {
   NotificationRepository,
   UpdateNotificationData,
 } from '../../../../domain/repositories/notification.repository';
+import { OutboxEventTypeOrmEntity } from '../entities/outbox-event.typeorm-entity';
 import { NotificationTypeOrmEntity } from '../entities/notification.typeorm-entity';
 
 @Injectable()
@@ -14,11 +16,41 @@ export class NotificationTypeOrmRepository implements NotificationRepository {
   constructor(
     @InjectRepository(NotificationTypeOrmEntity)
     private readonly repository: Repository<NotificationTypeOrmEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(notification: Notification): Promise<Notification> {
     const savedEntity = await this.repository.save(this.toPersistence(notification));
     return this.toDomain(savedEntity);
+  }
+
+  async createWithOutbox(
+    notification: Notification,
+    outboxEvent: OutboxEvent,
+  ): Promise<Notification> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const savedNotification = await queryRunner.manager.save(
+        NotificationTypeOrmEntity,
+        this.toPersistence(notification),
+      );
+
+      await queryRunner.manager.save(
+        OutboxEventTypeOrmEntity,
+        this.toPersistenceOutbox(outboxEvent),
+      );
+
+      await queryRunner.commitTransaction();
+      return this.toDomain(savedNotification);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findAll(): Promise<Notification[]> {
@@ -96,6 +128,21 @@ export class NotificationTypeOrmRepository implements NotificationRepository {
       metadata: notification.metadata,
       createdAt: notification.createdAt,
       updatedAt: notification.updatedAt,
+    };
+  }
+
+  private toPersistenceOutbox(outboxEvent: OutboxEvent): Partial<OutboxEventTypeOrmEntity> {
+    return {
+      id: outboxEvent.id,
+      aggregateType: outboxEvent.aggregateType,
+      aggregateId: outboxEvent.aggregateId,
+      eventType: outboxEvent.eventType,
+      payload: outboxEvent.payload,
+      status: outboxEvent.status,
+      retryCount: outboxEvent.retryCount,
+      errorMessage: outboxEvent.errorMessage,
+      createdAt: outboxEvent.createdAt,
+      processedAt: outboxEvent.processedAt,
     };
   }
 }
